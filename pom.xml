@@ -132,7 +132,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Java EE API -->
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>

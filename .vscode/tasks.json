@@ -1,0 +1,45 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "runJarAfterVerify",
+			"type": "shell",
+			"command": "java",
+			"args": [
+				"-Xms2G",
+				"-Xmx4G",
+				"-jar",
+				"paper-1.20.1-196.jar",
+				"--nogui"
+			],
+			"options": {
+				"cwd": "F:\\pserver1201"
+			},
+			"problemMatcher": [],
+			"detail": "Run the JAR file in the specified directory after mvn verify.",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": [
+				"mvnVerifyAndRunJar"
+			]
+		},
+		{
+			"label": "mvnVerifyAndRunJar",
+			"type": "shell",
+			"command": "mvn",
+			"args": [
+				"verify"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [],
+			"detail": "Run mvn verify.",
+			"group": {
+				"kind": "build"
+			}
+		}
+	]
+}

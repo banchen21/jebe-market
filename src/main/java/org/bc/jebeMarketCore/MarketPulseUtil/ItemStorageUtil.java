@@ -1,5 +1,7 @@
 package org.bc.jebeMarketCore.MarketPulseUtil;
 
+import ca.tweetzy.skulls.flight.utils.QuickItem;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -54,19 +56,22 @@ public class ItemStorageUtil {
     }
 
     /**
-     *  获取物品
-     * @param file1
-     * @return
+     * 获取物品
+     *
+     * @param file1 File
+     * @return ItemStack
      */
     @Nullable
     public static ItemStack getItemStack(File file1) throws IOException, ClassNotFoundException {
         if (file1.exists()) {
-                FileInputStream fileIn = new FileInputStream(file1);
-                ObjectInputStream in = new ObjectInputStream(fileIn);
-                byte[] data = (byte[]) in.readObject();
-                return ItemStorageUtil.deserializeItemStack(data);
+            FileInputStream fileIn = new FileInputStream(file1);
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            byte[] data = (byte[]) in.readObject();
+            return ItemStorageUtil.deserializeItemStack(data);
         } else {
             return null;
         }
     }
+
+
 }

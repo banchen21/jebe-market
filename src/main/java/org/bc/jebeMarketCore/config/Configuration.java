@@ -1,69 +1,65 @@
 package org.bc.jebeMarketCore.config;
 
+import lombok.Getter;
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Configuration {
 
     private final JebeMarket plugin;
-    private FileConfiguration config;
+    @Getter
+    FileConfiguration config;
 
     public Configuration(JebeMarket plugin) {
         this.plugin = plugin;
-        reload();
+        init();
     }
 
-    public void reload() {
+    public void init() {
         plugin.saveDefaultConfig();
-        plugin.saveResource("shops.json", false);
-        createFolder("shops");
+        plugin.saveResource("lang/cn.yml", false);
         config = plugin.getConfig();
     }
+
+    //    使用的存储方式
+    public StorageType getStorageType() {
+        String storageType = config.getString("storage.type");
+        return StorageType.valueOf(storageType);
+    }
+
+    public YamlConfiguration getI18nConfig() {
+        String language = config.getString("language");
+        Path langPath = Paths.get(
+                plugin.getDataFolder().getAbsolutePath(),
+                "lang",
+                language + ".yml"
+        );
+        return YamlConfiguration.loadConfiguration(langPath.toFile());
+    }
+
 
     /**
      * 在插件的数据文件夹中创建指定名称的空文件夹。
      *
      * @param folderName 要创建的文件夹名称
      */
-    public void createFolder(String folderName) {
-        // 获取插件的数据文件夹路径
+    private void createFolder(String folderName) {
         Path dataFolderPath = plugin.getDataFolder().toPath();
-        // 构建文件夹的完整路径
         Path folderPath = dataFolderPath.resolve(folderName);
-
         try {
-            // 创建文件夹（如果不存在）
             Files.createDirectories(folderPath);
         } catch (IOException ignored) {
         }
     }
 
-    public double getDefaultPrice() {
-        return config.getDouble("defaults.price", 100.0);
-    }
-
-    public String getCurrency() {
-        return config.getString("defaults.currency", "JCoin");
-    }
-
-    public String getStorageType() {
-        return config.getString("storage.type", "memory");
-    }
-
-    public String getLanguage() {
-        return config.getString("language", "zh_CN");
-    }
-
-    //    获取特定key
-    public String getString(String key) {
-        return config.getString(key);
-    }
-
-    public int getInt(String key) {
-        return config.getInt(key);
+    public String getString(String s) {
+        return config.getString(s);
     }
 }

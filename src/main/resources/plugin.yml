@@ -2,7 +2,7 @@ name: jebemarket
 version: '1.0-SNAPSHOT'
 main: org.bc.jebeMarketCore.JebeMarket
 api-version: '1.20'
-authors: [banchen21]
+authors: [ banchen21 ]
 description: 星际市集
 commands:
   market:
@@ -10,13 +10,13 @@ commands:
     subcommands:
       help:
         description: 星际市集帮助
-      shop:
-        description: 星际市集商店
-        subcommands:
-          create:
-            description: 星际市集创建物品
-          edit:
-            description: 星际市集编辑物品
-      item:
-        description: 星际市集物品
+  shop:
+    description: 星际市集商店
+    subcommands:
+      create:
+        description: 星际市集创建物品
+      edit:
+        description: 星际市集编辑物品
+  item:
+    description: 星际市集物品
 
