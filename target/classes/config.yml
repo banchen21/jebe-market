@@ -1,13 +1,5 @@
-defaults:
-  price: 5000.0
-  currency: HBC
-
-language: zh_CN
-
-# 每页商铺数量
-shop:
-  list:
-    page: 3
-
+# 使用的语言
+language: cn
+# 存储方式: 文件、sqlite、mysql
 storage:
-  type: file # 可选项: file, sqlite, mysql
+  type: file

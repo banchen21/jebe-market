@@ -2,8 +2,8 @@ package org.bc.jebeMarketCore;
 
 import org.bc.jebeMarketCore.api.ItemManager;
 import org.bc.jebeMarketCore.api.ShopManager;
-import org.bc.jebeMarketCore.command.MarketCommand;
-import org.bc.jebeMarketCore.command.MarketTabCompleter;
+import org.bc.jebeMarketCore.command.ShopCommand;
+import org.bc.jebeMarketCore.command.ShopTabCommand;
 import org.bc.jebeMarketCore.config.Configuration;
 import org.bc.jebeMarketCore.listeners.PlayerListener;
 import org.bukkit.Bukkit;
@@ -43,10 +43,10 @@ public final class JebeMarket extends JavaPlugin {
         }
 
         // 注册命令
-        PluginCommand shopCommand = getCommand("market");
+        PluginCommand shopCommand = getCommand("shop");
         if (shopCommand != null) {
-            shopCommand.setExecutor(new MarketCommand(shopManager, itemManager, config));
-            shopCommand.setTabCompleter(new MarketTabCompleter(shopManager, itemManager, config));
+            shopCommand.setExecutor(new ShopCommand(shopManager, itemManager, config));
+            shopCommand.setTabCompleter(new ShopTabCommand(shopManager, itemManager, config));
         }
 
 //        注册事件监听

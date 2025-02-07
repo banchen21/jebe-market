@@ -5,18 +5,51 @@ api-version: '1.20'
 authors: [ banchen21 ]
 description: 星际市集
 commands:
-  market:
-    description: 星际市集指令
-    subcommands:
-      help:
-        description: 星际市集帮助
   shop:
-    description: 星际市集商店
+    description: 星际市集核心指令
+    aliases: [ market ]  # 保留原market指令作为别名
     subcommands:
       create:
-        description: 星际市集创建物品
+        description: 创建新商铺
+        usage: /shop create <商铺名> <shop/pawnshop>
+      list:
+        description: 查看拥有的商铺列表
       edit:
-        description: 星际市集编辑物品
-  item:
-    description: 星际市集物品
-
+        description: 编辑商铺属性
+        subcommands:
+          name:
+            description: 修改商铺名称
+            usage: /shop edit name <商铺uid> <新名称>
+          lore:
+            description: 设置商铺描述（用|换行）
+            usage: /shop edit lore <商铺uid> <文本>
+          owner:
+            description: 转让商铺所有权
+            usage: /shop edit owner <商铺uid> <玩家> yes
+          type:
+            description: 切换商铺类型
+            usage: /shop edit type <商铺uid> <shop/pawnshop>
+      delete:
+        description: 删除指定商铺
+        usage: /shop delete <商铺uid> yes
+      info:
+        description: 查看商铺详细信息
+        usage: /shop info <商铺uid>
+      item:
+        description: 商品管理子系统
+        subcommands:
+          up:
+            description: 商品上架操作
+            subcommands:
+              hand:
+                description: 上架手持物品
+                usage: /shop item up hand <商铺uid>
+              inventory:
+                description: 上架背包所有物品
+                usage: /shop item up inventory <商铺uid>
+          down:
+            description: 商品下架操作
+            usage: /shop item down <商铺uid> <商品ID>
+  help:
+    description: 查看指令帮助
+    usage: /shop help
