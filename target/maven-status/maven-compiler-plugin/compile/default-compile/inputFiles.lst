@@ -1,0 +1,16 @@
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\api\ItemManager.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\api\ShopManager.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\command\MarketCommand.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\command\MarketTabCompleter.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\config\Configuration.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\i18n\JebeMarketTranslations.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\JebeMarket.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\listeners\PlayerListener.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\MarketPulseUtil\ItemStorageUtil.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\model\Shop.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\model\ShopItem.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\repository\FileShopRepository.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\repository\ShopRepository.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\service\ItemServiceImpl.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\service\ShopServiceImpl.java
+E:\jebe-market\jebe-market\src\main\java\org\bc\jebeMarketCore\service\ShopServiceTest.java

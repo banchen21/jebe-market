@@ -1,0 +1,17 @@
+org\bc\jebeMarketCore\repository\FileShopRepository$1.class
+org\bc\jebeMarketCore\i18n\JebeMarketTranslations.class
+org\bc\jebeMarketCore\MarketPulseUtil\ItemStorageUtil.class
+org\bc\jebeMarketCore\JebeMarket.class
+org\bc\jebeMarketCore\config\Configuration.class
+org\bc\jebeMarketCore\api\ItemManager.class
+org\bc\jebeMarketCore\command\MarketTabCompleter.class
+org\bc\jebeMarketCore\repository\ShopRepository.class
+org\bc\jebeMarketCore\command\MarketCommand.class
+org\bc\jebeMarketCore\listeners\PlayerListener.class
+org\bc\jebeMarketCore\service\ItemServiceImpl.class
+org\bc\jebeMarketCore\model\ShopItem.class
+org\bc\jebeMarketCore\repository\FileShopRepository.class
+org\bc\jebeMarketCore\service\ShopServiceImpl.class
+org\bc\jebeMarketCore\service\ShopServiceTest.class
+org\bc\jebeMarketCore\api\ShopManager.class
+org\bc\jebeMarketCore\model\Shop.class
