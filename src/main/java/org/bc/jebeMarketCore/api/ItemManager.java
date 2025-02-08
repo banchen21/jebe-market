@@ -3,7 +3,6 @@ package org.bc.jebeMarketCore.api;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
 import java.util.UUID;
 
 public interface ItemManager {

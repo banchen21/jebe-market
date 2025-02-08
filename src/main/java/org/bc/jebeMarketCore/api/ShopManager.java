@@ -36,15 +36,15 @@ public interface ShopManager {
      * @param shopType 商店类型
      * @return 返回新创建的商店对象
      */
-    Shop createShop(@NotNull UUID uniqueId, String shopName, String shopType);
+    Shop createShop(@NotNull UUID uniqueId, String shopName, UUID owner, boolean shopType);
 
     /**
      * 根据商店的UUID获取商店信息
      *
-     * @param uuid 商店的唯一ID
+     * @param uuid 商店的唯一name
      * @return 返回对应的商店对象
      */
-    Shop getShop(UUID uuid);
+    Shop getShop(String uuid);
 
     /**
      * 更新商店的名称

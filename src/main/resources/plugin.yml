@@ -1,4 +1,4 @@
-name: jebemarket
+name: JebeMarket
 version: '1.0-SNAPSHOT'
 main: org.bc.jebeMarketCore.JebeMarket
 api-version: '1.20'

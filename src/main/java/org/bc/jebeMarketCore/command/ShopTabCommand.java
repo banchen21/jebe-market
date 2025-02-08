@@ -3,6 +3,7 @@ package org.bc.jebeMarketCore.command;
 import org.bc.jebeMarketCore.api.ItemManager;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.config.Configuration;
+import org.bc.jebeMarketCore.model.Shop;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -73,7 +73,7 @@ public class ShopTabCommand implements TabCompleter {
                 break;
             case "delete":
             case "info":
-                completions.addAll(getOwnedShopsUuid(sender, isAdmin));
+                completions.addAll(getOwnedShopName(sender, isAdmin));
                 break;
             case "item":
                 completions.addAll(List.of("up", "down"));
@@ -100,7 +100,7 @@ public class ShopTabCommand implements TabCompleter {
             case "name":
             case "lore":
             case "owner":
-                completions.addAll(getOwnedShopsUuid(sender, isAdmin));
+                completions.addAll(getOwnedShopName(sender, isAdmin));
                 break;
             case "type":
                 completions.addAll(List.of("shop", "pawnshop"));
@@ -112,7 +112,7 @@ public class ShopTabCommand implements TabCompleter {
         if ("up".equalsIgnoreCase(subCmd)) {
             completions.addAll(List.of("hand", "inventory"));
         } else if ("down".equalsIgnoreCase(subCmd)) {
-            completions.addAll(getOwnedShopsUuid(sender, isAdmin));
+            completions.addAll(getOwnedShopName(sender, isAdmin));
         }
     }
 
@@ -123,7 +123,7 @@ public class ShopTabCommand implements TabCompleter {
             }
         } else if ("item".equalsIgnoreCase(arg0)) {
             if ("up".equalsIgnoreCase(arg1)) {
-                completions.addAll(getOwnedShopsUuid(sender, isAdmin));
+                completions.addAll(getOwnedShopName(sender, isAdmin));
             } else if ("down".equalsIgnoreCase(arg1)) {
                 handleItemDownCompletion(arg2, completions);
             }
@@ -147,11 +147,11 @@ public class ShopTabCommand implements TabCompleter {
         }
     }
 
-    private List<String> getOwnedShopsUuid(CommandSender sender, boolean isAdmin) {
+    private List<String> getOwnedShopName(CommandSender sender, boolean isAdmin) {
         if (sender instanceof Player) {
             return shopManager.getShopsByOwner(((Player) sender).getUniqueId(), isAdmin)
                     .stream()
-                    .map(shop -> shop.getUuid().toString())
+                    .map(Shop::getName)
                     .collect(Collectors.toList());
         }
         return new ArrayList<>();

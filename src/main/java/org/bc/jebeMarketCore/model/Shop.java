@@ -1,9 +1,9 @@
 package org.bc.jebeMarketCore.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
+import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -11,19 +11,32 @@ import java.util.UUID;
  */
 @Setter
 @Getter
+@NoArgsConstructor  // 添加 Lombok 无参构造
 public class Shop {
-    private UUID uuid;          // 商铺唯一标识
-    private String name;              // 商铺名称
-    private UUID owner;               // 所有者UUID
-    private ShopType type;            // 商铺类型
-    private String lore;              // 商铺描述（使用|换行）
-    private LocalDateTime createTime; // 创建时间
-    private LocalDateTime lastModified; // 最后修改时间
+    @ColumnName("uuid") // 明确映射到数据库的 uuid 列（TEXT 类型）
+    private UUID uuid;
+    @ColumnName("name") // 明确映射到数据库的 name 列（TEXT 类型）
+    private String name;
+    @ColumnName("owner") // 明确映射到数据库的 owner 列（TEXT 类型）
+    private UUID owner;
+    @ColumnName("type")  // 明确映射数据库列名
+    private boolean shopType;
+    @ColumnName("lore") // 明确映射到数据库的 lore 列（TEXT 类型）
+    private String lore;
 
-
-    public enum ShopType {
-        SHOP,       // 普通商店
-        PAWNSHOP    // 当铺
+    public Shop(@NotNull UUID uniqueId, String shopName, UUID ownerUuid, boolean shopType1) {
+        uuid = UUID.randomUUID();
+        name = shopName;
+        owner = ownerUuid;
+        shopType = shopType1;
+        lore = "hi~";
     }
 
+    public Shop(UUID uuid, String name, UUID owner, boolean shopType, String lore) {
+        this.uuid = uuid;
+        this.name = name;
+        this.owner = owner;
+        this.shopType = shopType;
+        this.lore = lore;
+    }
 }

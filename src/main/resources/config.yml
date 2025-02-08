@@ -2,4 +2,4 @@
 language: cn
 # 存储方式: 文件、sqlite、mysql
 storage:
-  type: file
+  type: sqlite
