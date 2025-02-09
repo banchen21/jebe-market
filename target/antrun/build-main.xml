@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="maven-antrun-" default="main">
   <target name="main">
-    <copy file="E:\jebe-market\target/jebemarket-1.0-SNAPSHOT.jar" tofile="F:\pserver1201\plugins/jebemarket-1.0-SNAPSHOT.jar" />
+    <copy file="E:\jebe-market\target/JebeMarket-1.0-SNAPSHOT.jar" tofile="F:\pserver1201\plugins/JebeMarket-1.0-SNAPSHOT.jar" />
   </target>
 </project>

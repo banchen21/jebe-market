@@ -17,8 +17,8 @@ public class ShopManagerImpl implements ShopManager {
     }
 
     @Override
-    public List<Shop> getShopsByOwner(UUID playerId, boolean isAdmin) {
-        return shopService.getShopsByOwner(playerId, isAdmin);
+    public List<Shop> getShopsByOwner(UUID playerId) {
+        return shopService.getShopsByOwner(playerId);
     }
 
     @Override
@@ -37,21 +37,17 @@ public class ShopManagerImpl implements ShopManager {
 
     @Override
     public Shop getShop(String name) {
-        return shopService.getShop(name);
+        return shopService.findByUuid(name);
     }
 
     @Override
-    public boolean updateShopName(UUID uuid, String newName) {
-        return false;
-    }
-
-    @Override
-    public void updateShop(Shop shop) {
-
+    public boolean setShop(Shop shop) {
+        return shopService.updateShopName(shop) && shopService.updateShopOwner(shop) &&
+                shopService.updateShopType(shop) && shopService.updateShopLore(shop);
     }
 
     @Override
     public boolean deleteShop(UUID shopUuid, boolean b) {
-        return false;
+        return shopService.deleteShop(shopUuid);
     }
 }

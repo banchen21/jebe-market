@@ -5,16 +5,26 @@ import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.command.ShopCommand;
 import org.bc.jebeMarketCore.command.ShopTabCommand;
 import org.bc.jebeMarketCore.config.Configuration;
+import org.bc.jebeMarketCore.database.ItemSqlite3Util;
 import org.bc.jebeMarketCore.listeners.PlayerListener;
+import org.bc.jebeMarketCore.repository.ItemServiceImpl;
+import org.bc.jebeMarketCore.repository.ShopServiceImpl;
+import org.bc.jebeMarketCore.service.ItemManagerImpl;
+import org.bc.jebeMarketCore.service.ShopManagerImpl;
+import org.bc.jebeMarketCore.database.MysqlUtil;
+import org.bc.jebeMarketCore.database.ShopSqlite3Util;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.logging.Level;
 
 public final class JebeMarket extends JavaPlugin {
@@ -33,14 +43,24 @@ public final class JebeMarket extends JavaPlugin {
         checkFilesystem();
 
         // 初始化数据存储（示例使用内存存储）
+        ShopServiceImpl shopService = null;
+        ItemServiceImpl itemService = null;
         switch (config.getStorageType()) {
-            case file -> {
-            }
             case sqlite -> {
+                try {
+                    shopService = new ShopServiceImpl(new ShopSqlite3Util(this));
+                    itemService = new ItemServiceImpl(new ItemSqlite3Util(this));
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
             case mysql -> {
+                shopService = new ShopServiceImpl(new MysqlUtil(this));
             }
         }
+
+        shopManager = new ShopManagerImpl(shopService);
+        itemManager = new ItemManagerImpl(itemService);
 
         // 注册命令
         PluginCommand shopCommand = getCommand("shop");
@@ -49,9 +69,16 @@ public final class JebeMarket extends JavaPlugin {
             shopCommand.setTabCompleter(new ShopTabCommand(shopManager, itemManager, config));
         }
 
-//        注册事件监听
-        getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-        getLogger().info("JebeMarketCore 已启用");
+        //        注册事件监听
+        getServer().
+
+                getPluginManager().
+
+                registerEvents(new PlayerListener(this), this);
+
+        getLogger().
+
+                info("JebeMarketCore 已启用");
     }
 
     private void checkFilesystem() {

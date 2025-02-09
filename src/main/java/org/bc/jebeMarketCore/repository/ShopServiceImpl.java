@@ -20,37 +20,42 @@ public class ShopServiceImpl implements ShopRepository {
 
     @Override
     public boolean updateShopName(Shop shop) {
-        return false;
+        return shopRepository.updateShopName(shop);
     }
 
     @Override
     public boolean updateShopOwner(Shop shop) {
-        return false;
+        return shopRepository.updateShopOwner(shop);
     }
 
     @Override
     public boolean updateShopType(Shop shop) {
-        return false;
+        return shopRepository.updateShopType(shop);
     }
 
     @Override
     public boolean updateShopLore(Shop shop) {
-        return false;
+        return shopRepository.updateShopLore(shop);
     }
 
     @Override
-    public Shop getShop(String name) {
-        return shopRepository.getShop(name);
+    public Shop findByUuid(String name) {
+        return shopRepository.findByUuid(name);
     }
 
     @Override
-    public List<Shop> getShopsByOwner(UUID playerId, boolean isAdmin) {
-        return shopRepository.getShopsByOwner(playerId, isAdmin);
+    public Shop findByName(String name) {
+        return shopRepository.findByName(name);
+    }
+
+    @Override
+    public List<Shop> getShopsByOwner(UUID playerId) {
+        return shopRepository.getShopsByOwner(playerId);
     }
 
     @Override
     public boolean deleteShop(UUID uuid) {
-        return false;
+        return shopRepository.deleteShop(uuid);
     }
 }
 

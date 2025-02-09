@@ -21,10 +21,12 @@ public interface ShopRepository {
     boolean updateShopLore(Shop shop);
 
     //    查询商店
-    Shop getShop(String name);
+    Shop findByUuid(String name);
+
+    Shop findByName(String name);
 
     //    查询玩家拥有的商店
-    List<Shop> getShopsByOwner(UUID playerId, boolean isAdmin);
+    List<Shop> getShopsByOwner(UUID playerId);
 
     //    删除商店
     boolean deleteShop(UUID uuid);

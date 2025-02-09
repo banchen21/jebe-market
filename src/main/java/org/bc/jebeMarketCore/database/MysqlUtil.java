@@ -20,12 +20,7 @@ public class MysqlUtil implements ShopRepository {
 
     @Override
     public boolean createShop(Shop shop) {
-        try {
-            jdbi.useExtension(ShopDao.class, dao -> dao.upsert(shop.getUuid(), shop.getName(), shop.getOwner(), shop.isShopType(), shop.getLore()));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return false;
     }
 
     @Override
@@ -49,12 +44,17 @@ public class MysqlUtil implements ShopRepository {
     }
 
     @Override
-    public Shop getShop(String name) {
+    public Shop findByUuid(String name) {
         return null;
     }
 
     @Override
-    public List<Shop> getShopsByOwner(UUID playerId, boolean isAdmin) {
+    public Shop findByName(String name) {
+        return jdbi.withExtension(ShopDao.class, dao -> dao.findByName(name));
+    }
+
+    @Override
+    public List<Shop> getShopsByOwner(UUID playerId) {
         return List.of();
     }
 

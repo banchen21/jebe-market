@@ -1,8 +1,10 @@
 package org.bc.jebeMarketCore.command;
 
+import lombok.extern.slf4j.Slf4j;
 import org.bc.jebeMarketCore.api.ItemManager;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.config.Configuration;
+import org.bc.jebeMarketCore.model.Item;
 import org.bc.jebeMarketCore.model.Shop;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class ShopTabCommand implements TabCompleter {
     private final ShopManager shopManager;
     private final ItemManager itemManager;
@@ -47,7 +50,7 @@ public class ShopTabCommand implements TabCompleter {
                 handleFourthArgument(sender, args[0], args[1], args[2], completions, isAdmin);
                 break;
             case 5:
-                handleFifthArgument(args[0], args[1], completions);
+//                handleFifthArgument(args[0], args[1], completions);
                 break;
         }
 
@@ -76,7 +79,7 @@ public class ShopTabCommand implements TabCompleter {
                 completions.addAll(getOwnedShopName(sender, isAdmin));
                 break;
             case "item":
-                completions.addAll(List.of("up", "down"));
+                completions.addAll(List.of("up", "down", "info"));
                 break;
             case "create":
                 completions.addAll(List.of("shop", "pawnshop"));
@@ -99,11 +102,8 @@ public class ShopTabCommand implements TabCompleter {
         switch (subCmd.toLowerCase()) {
             case "name":
             case "lore":
-            case "owner":
+            case "owner", "type":
                 completions.addAll(getOwnedShopName(sender, isAdmin));
-                break;
-            case "type":
-                completions.addAll(List.of("shop", "pawnshop"));
                 break;
         }
     }
@@ -113,6 +113,8 @@ public class ShopTabCommand implements TabCompleter {
             completions.addAll(List.of("hand", "inventory"));
         } else if ("down".equalsIgnoreCase(subCmd)) {
             completions.addAll(getOwnedShopName(sender, isAdmin));
+        } else if ("info".equalsIgnoreCase(subCmd)) {
+            completions.addAll(getOwnedShopName(sender, isAdmin));
         }
     }
 
@@ -120,36 +122,35 @@ public class ShopTabCommand implements TabCompleter {
         if ("edit".equalsIgnoreCase(arg0)) {
             if ("owner".equalsIgnoreCase(arg1)) {
                 Bukkit.getOnlinePlayers().forEach(p -> completions.add(p.getName()));
+            } else if ("type".equalsIgnoreCase(arg1)) {
+                completions.addAll(List.of("shop", "pawnshop"));
             }
         } else if ("item".equalsIgnoreCase(arg0)) {
             if ("up".equalsIgnoreCase(arg1)) {
                 completions.addAll(getOwnedShopName(sender, isAdmin));
             } else if ("down".equalsIgnoreCase(arg1)) {
-                handleItemDownCompletion(arg2, completions);
+                Shop shop = shopManager.getShop(arg2);
+                handleItemDownCompletion(shop.getUuid(), completions);
             }
         }
     }
 
-    private void handleFifthArgument(String arg0, String arg1, List<String> completions) {
-        if ("edit".equalsIgnoreCase(arg0) && "owner".equalsIgnoreCase(arg1)) {
-            completions.add("yes");
-        }
-    }
-
-    private void handleItemDownCompletion(String shopUuid, List<String> completions) {
+    private void handleItemDownCompletion(UUID shopUuid, List<String> completions) {
         try {
-            List<String> items = shopManager.getShopItems(UUID.fromString(shopUuid))
-                    .stream()
-                    .toList();
-            completions.addAll(items);
+            List<Item> items = itemManager.getItems(shopUuid);
+            items.forEach(
+                    item -> {
+                        completions.add(item.getUuid().toString());
+                    }
+            );
+            completions.add("all");
         } catch (IllegalArgumentException e) {
-            // Invalid UUID format
         }
     }
 
     private List<String> getOwnedShopName(CommandSender sender, boolean isAdmin) {
         if (sender instanceof Player) {
-            return shopManager.getShopsByOwner(((Player) sender).getUniqueId(), isAdmin)
+            return shopManager.getShopsByOwner(((Player) sender).getUniqueId())
                     .stream()
                     .map(Shop::getName)
                     .collect(Collectors.toList());

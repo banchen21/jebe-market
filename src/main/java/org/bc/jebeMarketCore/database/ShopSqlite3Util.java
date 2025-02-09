@@ -81,7 +81,7 @@ public class ShopSqlite3Util implements ShopRepository {
     //    创建Shop
     public boolean createShop(Shop shop) {
         try {
-            jdbi.useExtension(ShopDao.class, dao -> dao.upsert(shop.getUuid(), shop.getName(), shop.getOwner(), shop.isShopType(), shop.getLore()));
+            jdbi.useExtension(ShopDao.class, dao -> dao.insert(shop.getUuid(), shop.getName(), shop.getOwner(), shop.isShopType(), shop.getLore()));
             return true;
         } catch (Exception e) {
             return false;
@@ -90,26 +90,46 @@ public class ShopSqlite3Util implements ShopRepository {
 
     @Override
     public boolean updateShopName(Shop shop) {
-        return false;
+        try {
+            jdbi.useExtension(ShopDao.class, dao -> dao.updateName(shop.getUuid(), shop.getName()));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
     public boolean updateShopOwner(Shop shop) {
-        return false;
+        try {
+            jdbi.useExtension(ShopDao.class, dao -> dao.updateOwner(shop.getUuid(), shop.getOwner()));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
     public boolean updateShopType(Shop shop) {
-        return false;
+        try {
+            jdbi.useExtension(ShopDao.class, dao -> dao.updateType(shop.getUuid(), shop.isShopType()));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
     public boolean updateShopLore(Shop shop) {
-        return false;
+        try {
+            jdbi.useExtension(ShopDao.class, dao -> dao.updateLore(shop.getUuid(), shop.getLore()));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
-    public Shop getShop(String uuid) {
+    public Shop findByUuid(String uuid) {
         try {
             return jdbi.withExtension(ShopDao.class, dao -> dao.findByUuid(uuid));
         } catch (Exception e) {
@@ -118,7 +138,16 @@ public class ShopSqlite3Util implements ShopRepository {
     }
 
     @Override
-    public List<Shop> getShopsByOwner(UUID playerId, boolean isAdmin) {
+    public Shop findByName(String name) {
+        try {
+            return jdbi.withExtension(ShopDao.class, dao -> dao.findByName(name));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<Shop> getShopsByOwner(UUID playerId) {
         try {
             return jdbi.withExtension(ShopDao.class, dao -> dao.findByOwner(playerId));
         } catch (Exception e) {
@@ -129,14 +158,11 @@ public class ShopSqlite3Util implements ShopRepository {
 
     @Override
     public boolean deleteShop(UUID uuid) {
-        return false;
-    }
-
-    public Shop getShop(UUID uuid) {
         try {
-            return jdbi.withExtension(ShopDao.class, dao -> dao.findByUuid(uuid.toString()));
+            jdbi.useExtension(ShopDao.class, dao -> dao.delete(uuid));
+            return true;
         } catch (Exception e) {
-            return null;
+            return false;
         }
     }
 }

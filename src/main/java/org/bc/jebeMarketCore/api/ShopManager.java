@@ -15,10 +15,9 @@ public interface ShopManager {
      * 根据店主的ID获取商店列表
      *
      * @param playerId 玩家的唯一ID
-     * @param isAdmin  是否为管理员，可能影响查询结果或权限
      * @return 返回属于指定玩家的商店列表
      */
-    List<Shop> getShopsByOwner(UUID playerId, boolean isAdmin);
+    List<Shop> getShopsByOwner(UUID playerId);
 
     /**
      * 获取指定玩家的商店商品列表
@@ -41,26 +40,12 @@ public interface ShopManager {
     /**
      * 根据商店的UUID获取商店信息
      *
-     * @param uuid 商店的唯一name
+     * @param name 商店的唯一name
      * @return 返回对应的商店对象
      */
-    Shop getShop(String uuid);
+    Shop getShop(String name);
 
-    /**
-     * 更新商店的名称
-     *
-     * @param uuid    商店的唯一ID
-     * @param newName 新的商店名称
-     * @return 如果更新成功返回true，否则返回false
-     */
-    boolean updateShopName(UUID uuid, String newName);
-
-    /**
-     * 更新商店的信息
-     *
-     * @param shop 需要更新的商店对象，包含新的信息
-     */
-    void updateShop(Shop shop);
+    boolean setShop(Shop shop);
 
     /**
      * 删除指定的商店

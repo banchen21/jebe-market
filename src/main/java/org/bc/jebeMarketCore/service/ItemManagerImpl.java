@@ -1,11 +1,13 @@
 package org.bc.jebeMarketCore.service;
 
 import org.bc.jebeMarketCore.api.ItemManager;
-import org.bc.jebeMarketCore.repository.ItemRepository;
+import org.bc.jebeMarketCore.model.Item;
+import org.bc.jebeMarketCore.model.Shop;
 import org.bc.jebeMarketCore.repository.ItemServiceImpl;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ItemManagerImpl implements ItemManager {
@@ -18,16 +20,26 @@ public class ItemManagerImpl implements ItemManager {
 
     @Override
     public int getItemCount(UUID shopUuid) {
-        return 0;
+        return itemService.getItemsByShop(shopUuid).size();
     }
 
     @Override
-    public void addItem(UUID shopUuid, @NotNull ItemStack clone) {
-
+    public Item addItem(UUID shopUuid, @NotNull ItemStack clone) {
+        Item item = new Item(shopUuid, clone);
+        if (itemService.addItem(item)) {
+            return item;
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public boolean removeItem(UUID shopUuid, UUID itemId) {
-        return false;
+    public ItemStack removeItem(Shop shop, UUID itemId) {
+        return itemService.removeItem(shop, itemId);
+    }
+
+    @Override
+    public List<Item> getItems(UUID shopUuid) {
+        return itemService.getItemsByShop(shopUuid);
     }
 }
