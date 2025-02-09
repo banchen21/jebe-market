@@ -19,13 +19,6 @@ public interface ShopManager {
      */
     List<Shop> getShopsByOwner(UUID playerId);
 
-    /**
-     * 获取指定玩家的商店商品列表
-     *
-     * @param playerId 玩家的唯一ID
-     * @return 返回玩家商店中的商品名称列表
-     */
-    List<String> getShopItems(UUID playerId);
 
     /**
      * 创建一个新的商店

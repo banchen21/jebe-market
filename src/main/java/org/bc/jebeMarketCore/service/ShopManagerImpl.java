@@ -22,11 +22,6 @@ public class ShopManagerImpl implements ShopManager {
     }
 
     @Override
-    public List<String> getShopItems(UUID playerId) {
-        return List.of();
-    }
-
-    @Override
     public Shop createShop(@NotNull UUID uniqueId, String shopName, UUID owner, boolean shopType) {
         Shop shop = new Shop(uniqueId, shopName, owner, shopType);
         if (shopService.createShop(shop)) {

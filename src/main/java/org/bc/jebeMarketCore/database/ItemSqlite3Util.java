@@ -26,7 +26,6 @@ import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 public class ItemSqlite3Util implements ItemRepository {
     private final JavaPlugin plugin;
     private final HikariDataSource dataSource;
@@ -154,7 +153,7 @@ public class ItemSqlite3Util implements ItemRepository {
         try {
             Files.delete(itempath);
         } catch (FileSystemException e) {
-            log.error("文件可能被其他进程占用: " + e.getMessage());
+            plugin.getLogger().severe("文件被占用");
             return null;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -166,5 +165,20 @@ public class ItemSqlite3Util implements ItemRepository {
         );
 
         return itemStack;
+    }
+
+    @Override
+    public Item getItemById(UUID shopuuid, UUID itemId) {
+        return jdbi.withExtension(ItemDao.class, dao -> dao.findByUuid(shopuuid, itemId));
+    }
+
+    @Override
+    public boolean updatePrice(Item item) {
+        return jdbi.withExtension(ItemDao.class, dao -> dao.updatePrice(item.getUuid(), item.getPrice()));
+    }
+
+    @Override
+    public boolean updateAmount(Item item) {
+        return jdbi.withExtension(ItemDao.class, dao -> dao.updateAmount(item.getUuid(), item.getAmount()));
     }
 }

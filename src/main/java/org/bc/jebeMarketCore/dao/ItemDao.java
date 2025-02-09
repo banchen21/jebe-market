@@ -27,4 +27,15 @@ public interface ItemDao {
 
     @SqlQuery("SELECT * FROM items WHERE shopuuid = :shopuuid AND uuid = :uuid")
     Item findByUuidAndShopUuid(@Bind("shopuuid") UUID shopuuid, @Bind("uuid") UUID uuid);
+
+    @SqlQuery("SELECT * FROM items WHERE shopuuid= :shopuuid AND uuid = :uuid")
+    Item findByUuid(@Bind("shopuuid") UUID shopuuid, @Bind("uuid") UUID uuid);
+
+    //    修改商品价格
+    @SqlUpdate("UPDATE items SET price = :price WHERE uuid = :uuid")
+    boolean updatePrice(@Bind("uuid") UUID uuid, @Bind("price") double price);
+
+//    修改商品数量
+    @SqlUpdate("UPDATE items SET amount = :amount WHERE uuid = :uuid")
+    boolean updateAmount(@Bind("uuid") UUID uuid, @Bind("amount") int amount);
 }

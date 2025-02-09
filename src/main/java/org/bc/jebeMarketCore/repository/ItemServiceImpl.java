@@ -29,4 +29,19 @@ public class ItemServiceImpl implements ItemRepository {
     public ItemStack removeItem(Shop shop, UUID itemId) {
         return itemRepository.removeItem(shop, itemId);
     }
+
+    @Override
+    public Item getItemById(UUID shopuuid, UUID itemId) {
+        return itemRepository.getItemById(shopuuid, itemId);
+    }
+
+    @Override
+    public boolean updatePrice(Item item) {
+        return itemRepository.updatePrice(item);
+    }
+
+    @Override
+    public boolean updateAmount(Item item) {
+        return itemRepository.updateAmount(item);
+    }
 }

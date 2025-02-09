@@ -13,4 +13,10 @@ public interface ItemRepository {
     List<Item> getItemsByShop(UUID shopUuid);
 
     ItemStack removeItem(Shop shop, UUID itemId);
+
+    Item getItemById(UUID shopUuid, UUID itemId);
+
+    boolean updatePrice(Item item);
+
+    boolean updateAmount(Item item);
 }

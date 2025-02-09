@@ -42,4 +42,14 @@ public class ItemManagerImpl implements ItemManager {
     public List<Item> getItems(UUID shopUuid) {
         return itemService.getItemsByShop(shopUuid);
     }
+
+    @Override
+    public Item getItem(UUID shopUuid, UUID itemId) {
+        return itemService.getItemById(shopUuid, itemId);
+    }
+
+    @Override
+    public boolean updateItem(Item item) {
+        return itemService.updatePrice(item) && itemService.updateAmount(item);
+    }
 }

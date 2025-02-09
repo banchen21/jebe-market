@@ -10,15 +10,15 @@ import java.util.UUID;
 
 public interface ItemManager {
 
-    //    TODO 通过商品ID获取数量
     int getItemCount(UUID shopUuid);
 
-    //    TODO 添加商品
     Item addItem(UUID shopUuid, @NotNull ItemStack clone);
 
-    //    TODO 删除商品
     ItemStack removeItem(Shop shop, UUID itemId);
 
-    //    获取商品列表
     List<Item> getItems(UUID shopUuid);
+
+    Item getItem(UUID shopUuid, UUID itemId);
+
+    boolean updateItem(Item item);
 }

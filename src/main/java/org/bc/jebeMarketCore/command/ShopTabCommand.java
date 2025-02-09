@@ -50,11 +50,21 @@ public class ShopTabCommand implements TabCompleter {
                 handleFourthArgument(sender, args[0], args[1], args[2], completions, isAdmin);
                 break;
             case 5:
-//                handleFifthArgument(args[0], args[1], completions);
+                handleFifthArgument(sender, args, completions, isAdmin);
                 break;
         }
 
         return filterCompletions(completions, args);
+    }
+
+    private void handleFifthArgument(@NotNull CommandSender sender, @NotNull String[] args, List<String> completions, boolean isAdmin) {
+        if (args[0].equals("item") && args[1].equals("edit") && args.length == 5) {
+            completions.add("price");
+            Shop shop = shopManager.getShop(args[2]);
+            if (!shop.isShopType()) {
+                completions.add("amount");
+            }
+        }
     }
 
     private void handleFirstArgument(CommandSender sender, List<String> completions) {
@@ -79,7 +89,7 @@ public class ShopTabCommand implements TabCompleter {
                 completions.addAll(getOwnedShopName(sender, isAdmin));
                 break;
             case "item":
-                completions.addAll(List.of("up", "down", "info"));
+                completions.addAll(List.of("up", "down", "info", "edit"));
                 break;
             case "create":
                 completions.addAll(List.of("shop", "pawnshop"));
@@ -115,6 +125,8 @@ public class ShopTabCommand implements TabCompleter {
             completions.addAll(getOwnedShopName(sender, isAdmin));
         } else if ("info".equalsIgnoreCase(subCmd)) {
             completions.addAll(getOwnedShopName(sender, isAdmin));
+        } else if ("edit".equalsIgnoreCase(subCmd)) {
+            completions.addAll(getOwnedShopName(sender, isAdmin));
         }
     }
 
@@ -131,6 +143,10 @@ public class ShopTabCommand implements TabCompleter {
             } else if ("down".equalsIgnoreCase(arg1)) {
                 Shop shop = shopManager.getShop(arg2);
                 handleItemDownCompletion(shop.getUuid(), completions);
+                completions.add("all");
+            } else if ("edit".equalsIgnoreCase(arg1)) {
+                Shop shop = shopManager.getShop(arg2);
+                handleItemDownCompletion(shop.getUuid(), completions);
             }
         }
     }
@@ -138,32 +154,23 @@ public class ShopTabCommand implements TabCompleter {
     private void handleItemDownCompletion(UUID shopUuid, List<String> completions) {
         try {
             List<Item> items = itemManager.getItems(shopUuid);
-            items.forEach(
-                    item -> {
-                        completions.add(item.getUuid().toString());
-                    }
-            );
-            completions.add("all");
+            items.forEach(item -> {
+                completions.add(item.getUuid().toString());
+            });
         } catch (IllegalArgumentException e) {
         }
     }
 
     private List<String> getOwnedShopName(CommandSender sender, boolean isAdmin) {
         if (sender instanceof Player) {
-            return shopManager.getShopsByOwner(((Player) sender).getUniqueId())
-                    .stream()
-                    .map(Shop::getName)
-                    .collect(Collectors.toList());
+            return shopManager.getShopsByOwner(((Player) sender).getUniqueId()).stream().map(Shop::getName).collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
 
     private List<String> filterCompletions(List<String> completions, String[] args) {
         String lastArg = args[args.length - 1].toLowerCase();
-        return completions.stream()
-                .filter(s -> s.toLowerCase().startsWith(lastArg))
-                .sorted()
-                .collect(Collectors.toList());
+        return completions.stream().filter(s -> s.toLowerCase().startsWith(lastArg)).sorted().collect(Collectors.toList());
     }
 
     private boolean hasPermission(CommandSender sender) {

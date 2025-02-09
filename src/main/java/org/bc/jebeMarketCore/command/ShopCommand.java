@@ -1,6 +1,5 @@
 package org.bc.jebeMarketCore.command;
 
-import lombok.extern.slf4j.Slf4j;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -22,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 public class ShopCommand implements CommandExecutor {
     private final ShopManager shopManager;
     private final ItemManager itemManager;
@@ -76,7 +74,7 @@ public class ShopCommand implements CommandExecutor {
         }
 
         // 检查是否是玩家
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage(color("&c只有玩家可以创建商铺"));
             return;
         }
@@ -87,7 +85,6 @@ public class ShopCommand implements CommandExecutor {
             return;
         }
 
-        Player player = (Player) sender;
         String shopName = args[2];
         String shopType = args[1].toLowerCase();
 
@@ -214,10 +211,10 @@ public class ShopCommand implements CommandExecutor {
         shop.setShopType(bishopType);
         if (itemManager.getItems(shop.getUuid()).isEmpty()) {
             shopManager.setShop(shop);
+            sender.sendMessage(color("&a商铺类型已更新"));
         } else {
-            sender.sendMessage(color("&c删除失败，商铺内有商品，请先清空商品"));
+            sender.sendMessage(color("&c更新失败，商铺内有商品，请先清空商品"));
         }
-        sender.sendMessage(color("&a商铺类型已更新"));
     }
 
     private void handleDelete(CommandSender sender, String[] args) {
@@ -285,7 +282,7 @@ public class ShopCommand implements CommandExecutor {
             return;
         }
         if (args.length < 3) {
-            sender.sendMessage(color("&c用法: /shop item <up/down/info> ..."));
+            sender.sendMessage(color("&c用法: /shop item <up/down/info/edit> ..."));
             return;
         }
 
@@ -300,9 +297,36 @@ public class ShopCommand implements CommandExecutor {
             case "info":
                 handleItemInfo((Player) sender, args);
                 break;
-            default:
-                sender.sendMessage(color("&4用法: /shop item <up/down/info>"));
+            case "edit":
+                handleItemEdit((Player) sender, args);
                 break;
+            default:
+                sender.sendMessage(color("&4用法: /shop item <up/down/info/edit>"));
+                break;
+        }
+    }
+
+    private void handleItemEdit(Player player, String[] args) {
+        try {
+            Shop shop = shopManager.getShop(args[2]);
+            Item item = itemManager.getItem(shop.getUuid(), UUID.fromString(args[3]));
+            if (args[4].equals("price")) {
+                double price = Double.parseDouble(args[5]);
+                item.setPrice(price);
+                player.sendMessage(color("&a单价已更新: " + price));
+            } else if (args[4].equals("amount")) {
+                int amount = Integer.parseInt(args[5]);
+                item.setAmount(amount);
+                player.sendMessage(color("&a数量已更新： " + amount));
+            }
+            if (itemManager.updateItem(item)) {
+                player.sendMessage(color("&a信息成功"));
+            } else {
+                player.sendMessage(color("&c更新失败，请重试"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            player.sendMessage(color("&c/shop item edit ..."));
         }
     }
 
@@ -317,8 +341,7 @@ public class ShopCommand implements CommandExecutor {
                 player.sendMessage(color("&c该%s没有%s", shopTypeName, shopTypeTag));
                 return;
             }
-            for (int i = 0; i < items.size(); i++) {
-                Item item = items.get(i);
+            for (Item item : items) {
                 ItemStack itemStack = item.getItemStack();
                 if (itemStack != null && itemStack.getItemMeta() != null) {
                     // 构建基本信息
@@ -459,12 +482,11 @@ public class ShopCommand implements CommandExecutor {
     }
 
     private void handleList(CommandSender sender) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage(color("&c只有玩家可以查看商铺列表"));
             return;
         }
 
-        Player player = (Player) sender;
         List<Shop> shops = shopManager.getShopsByOwner(player.getUniqueId());
         if (shops.isEmpty()) {
             sender.sendMessage(color("&e你还没有创建任何商铺"));
