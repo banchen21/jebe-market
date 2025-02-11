@@ -4,6 +4,7 @@ import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.model.Shop;
 import org.bc.jebeMarketCore.utils.PlayerHeadManager;
+import org.bc.jebeMarketCore.utils.PlayerInputHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -21,6 +22,9 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 我的商店GUI
+ */
 public class MyShopGui implements InventoryHolder, Listener {
     private Inventory inventory;
     private final JebeMarket plugin;
@@ -28,6 +32,7 @@ public class MyShopGui implements InventoryHolder, Listener {
     private final PlayerHeadManager headManager;
     private final ShopPlayerGui shopPlayerGui;
     private final MyShopEditGui shopEditGui;
+    private final PlayerInputHandler inputHandler;
     private int currentPage = 1;
 
     // 分页相关常量
@@ -36,12 +41,13 @@ public class MyShopGui implements InventoryHolder, Listener {
     private static final int NEXT_PAGE_SLOT = 53;
     private static final int PAGE_INFO_SLOT = 49;
 
-    public MyShopGui(JebeMarket plugin, ShopManager shopManager, PlayerHeadManager headManager, ShopPlayerGui shopPlayerGui, MyShopEditGui shopEditGui) {
+    public MyShopGui(JebeMarket plugin, ShopManager shopManager, PlayerHeadManager headManager, ShopPlayerGui shopPlayerGui, MyShopEditGui shopEditGui, PlayerInputHandler inputHandler) {
         this.plugin = plugin;
         this.shopManager = shopManager;
         this.headManager = headManager;
         this.shopPlayerGui = shopPlayerGui;
         this.shopEditGui = shopEditGui;
+        this.inputHandler = inputHandler;
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -67,6 +73,21 @@ public class MyShopGui implements InventoryHolder, Listener {
             inventory.setItem(i, null);
         }
         List<Shop> playerShops = shopManager.getShopsByOwner(player.getUniqueId());
+//        TODO 配置添加 是否引导创建商铺,当前默认如果玩家没有商铺则引导创建
+        if (playerShops.isEmpty()) {
+            player.sendMessage("§c你还没有创建任何商店");
+            inputHandler.requestInput(player, "请输入你要创建的商店名", s -> {
+                String shopName = s.trim();
+                try {
+                    Shop shop = shopManager.createShop(shopName, player.getUniqueId());
+                    player.sendMessage("§a商店创建成功: " + shop.getName());
+                } catch (Exception e) {
+                    player.sendMessage("§c商店创建失败");
+                }
+            }, 30);
+            player.closeInventory();
+            return;
+        }
 
         int totalPages = (int) Math.ceil((double) playerShops.size() / ITEMS_PER_PAGE);
 
@@ -197,7 +218,7 @@ public class MyShopGui implements InventoryHolder, Listener {
 
     private void openShopDetail(Shop shop, Player player) {
         player.closeInventory();
-        shopEditGui.open(shop,player);
+        shopEditGui.open(shop, player);
         player.sendMessage("§a正在打开商店: " + shop.getName());
     }
 

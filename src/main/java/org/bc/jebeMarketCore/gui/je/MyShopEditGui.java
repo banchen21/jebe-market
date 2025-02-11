@@ -16,11 +16,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * 我的商店编辑界面
+ */
 public class MyShopEditGui implements InventoryHolder, Listener {
     private final JebeMarket plugin;
     private final ShopManager shopManager;
     private final GuiManager guiManager;
     private final PlayerInputHandler inputHandler;
+    private final MyShopItemEditGui myShopItemEditGui;
     private Inventory inventory;
 
     // 按钮布局定义
@@ -28,13 +32,14 @@ public class MyShopEditGui implements InventoryHolder, Listener {
     private static final int DESC_SLOT = 22;
     private static final int PRICE_SLOT = 24;
     private static final int BACK_SLOT = 49;
-    Shop shop;
+    private Shop shop;
 
-    public MyShopEditGui(JebeMarket plugin, ShopManager shopManager, GuiManager guiManager, PlayerInputHandler inputHandler) {
+    public MyShopEditGui(JebeMarket plugin, ShopManager shopManager, GuiManager guiManager, PlayerInputHandler inputHandler, MyShopItemEditGui myShopItemEditGui) {
         this.plugin = plugin;
         this.shopManager = shopManager;
         this.guiManager = guiManager;
         this.inputHandler = inputHandler;
+        this.myShopItemEditGui = myShopItemEditGui;
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -114,6 +119,8 @@ public class MyShopEditGui implements InventoryHolder, Listener {
 
             case PRICE_SLOT:
                 // TODO: 打开商品价格管理界面
+                player.sendMessage("§a即将打开商品价格管理界面");
+                myShopItemEditGui.open(shop, player);
                 break;
             case BACK_SLOT:
                 player.closeInventory();

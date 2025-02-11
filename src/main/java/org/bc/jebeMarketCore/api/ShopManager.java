@@ -25,11 +25,10 @@ public interface ShopManager {
     /**
      * 创建一个新的商店
      *
-     * @param uniqueId 商店所有者的唯一ID
      * @param shopName 商店名称
      * @return 返回新创建的商店对象
      */
-    Shop createShop(@NotNull UUID uniqueId, String shopName, UUID owner);
+    Shop createShop(String shopName, UUID owner);
 
     /**
      * 根据商店的UUID获取商店信息

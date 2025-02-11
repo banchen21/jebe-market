@@ -10,6 +10,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
+/**
+ * GUI管理器
+ */
 public class GuiManager implements Listener {
 
 
@@ -22,6 +25,7 @@ public class GuiManager implements Listener {
     private final ShopPlayerGui shopPlayerGui;
     private final MyShopGui myShopGui;
     private final MyShopEditGui myShopEditGui;
+    private final MyShopItemEditGui MyShopItemEditGui;
 
 
     public GuiManager(JebeMarket plugin, ShopManager shopManager, PlayerHeadManager playerHeadManager, PlayerInputHandler inputHandler) {
@@ -30,9 +34,10 @@ public class GuiManager implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.shopManager = shopManager;
         this.playerHeadManager = playerHeadManager;
-        this.myShopEditGui = new MyShopEditGui(plugin, shopManager, this, inputHandler);
+        this.MyShopItemEditGui = new MyShopItemEditGui(plugin, shopManager, inputHandler);
+        this.myShopEditGui = new MyShopEditGui(plugin, shopManager, this, inputHandler,MyShopItemEditGui);
         this.shopPlayerGui = new ShopPlayerGui(plugin, shopManager);
-        this.myShopGui = new MyShopGui(plugin, shopManager, playerHeadManager, shopPlayerGui, myShopEditGui);
+        this.myShopGui = new MyShopGui(plugin, shopManager, playerHeadManager, shopPlayerGui, myShopEditGui, inputHandler);
         this.shopBrowseGui = new ShopBrowseGui(plugin, shopManager, playerHeadManager, shopPlayerGui);
         this.shopMainGui = new ShopMainGui(plugin, shopBrowseGui, myShopGui);
     }

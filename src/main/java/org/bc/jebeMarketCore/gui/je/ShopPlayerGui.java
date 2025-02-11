@@ -18,6 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 商品购买界面
+ */
 public class ShopPlayerGui implements InventoryHolder {
 
     private final JebeMarket plugin;

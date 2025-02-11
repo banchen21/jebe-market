@@ -21,6 +21,9 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 所有商铺GUI
+ */
 public class ShopBrowseGui implements InventoryHolder, Listener {
     private Inventory inventory;
     private final JebeMarket plugin;

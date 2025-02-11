@@ -24,7 +24,7 @@ public class ShopManagerImpl implements ShopManager {
     }
 
     @Override
-    public Shop createShop(@NotNull UUID uniqueId, String shopName, UUID owner) {
+    public Shop createShop(String shopName, UUID owner) {
         Shop shop = new Shop(shopName, owner);
         if (shopService.createShop(shop)) {
             return shop;

@@ -119,7 +119,7 @@ public class ShopCommand implements CommandExecutor {
         }
 
         String shopName = args[1];
-        Shop shop = shopManager.createShop(player.getUniqueId(), shopName, player.getUniqueId());
+        Shop shop = shopManager.createShop(shopName, player.getUniqueId());
 
         // 处理商铺创建结果
         if (shop != null) {
@@ -463,7 +463,7 @@ public class ShopCommand implements CommandExecutor {
         sender.sendMessage(color("&e/shop list &7- 列出所有商铺"));
     }
 
-//    TODO 权限验证
+    //    TODO 权限验证
     private boolean checkPermission(CommandSender sender, String permission) {
         if (!sender.hasPermission(permission) && !sender.hasPermission("jebemarket.admin")) {
             sender.sendMessage(color("&c你没有执行此操作的权限"));

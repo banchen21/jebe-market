@@ -13,6 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 
+/**
+ * 商店主页Gui
+ */
 public class ShopMainGui implements InventoryHolder {
     private final Inventory inventory;
     private final ShopBrowseGui shopBrowseGui1;
