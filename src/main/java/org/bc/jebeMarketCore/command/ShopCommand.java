@@ -88,6 +88,12 @@ public class ShopCommand implements CommandExecutor {
         if (args.length < 2) {
             sender.sendMessage(color("&c用法: /shop open <shop>"));
         }
+        Shop shop = shopManager.getShop(args[1]);
+        if (shop == null) {
+            sender.sendMessage(color("&c商铺不存在"));
+            return;
+        }
+        guiManager.openShopPlayerGui(shop, (Player) sender);
     }
 
     private void handleGui(@NotNull CommandSender sender, @NotNull String[] args) {
