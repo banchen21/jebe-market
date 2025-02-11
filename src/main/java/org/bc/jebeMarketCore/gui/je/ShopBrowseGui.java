@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class ShopBrowseGui implements InventoryHolder, Listener {
-    private final Inventory inventory;
+    private Inventory inventory;
     private final JebeMarket plugin;
     private final ShopManager shopManager;
     private final PlayerHeadManager headManager;
@@ -35,16 +35,12 @@ public class ShopBrowseGui implements InventoryHolder, Listener {
     private static final int NEXT_PAGE_SLOT = 53;
     private static final int PAGE_INFO_SLOT = 49;
 
-    public ShopBrowseGui(JebeMarket plugin, ShopManager shopManager, PlayerHeadManager headManager) {
+    public ShopBrowseGui(JebeMarket plugin, ShopManager shopManager, PlayerHeadManager headManager, ShopPlayerGui shopPlayerGui) {
         this.plugin = plugin;
         this.shopManager = shopManager;
         this.headManager = headManager;
-        this.inventory = Bukkit.createInventory(this, 54, "§b§l全服商店");
-        this.shopPlayerGui = new ShopPlayerGui(plugin, shopManager);
+        this.shopPlayerGui = shopPlayerGui;
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        initializeLayout();
-        loadPage();
-
     }
 
     private void initializeLayout() {
@@ -58,6 +54,9 @@ public class ShopBrowseGui implements InventoryHolder, Listener {
         inventory.setItem(PREV_PAGE_SLOT, createNavigationItem(Material.ARROW, "§a上一页"));
         inventory.setItem(NEXT_PAGE_SLOT, createNavigationItem(Material.ARROW, "§a下一页"));
         updatePageInfo(0);
+
+        // 根据当前页码设置分页按钮的可见性
+        setPaginationVisibility();
     }
 
     private void loadPage() {
@@ -85,6 +84,28 @@ public class ShopBrowseGui implements InventoryHolder, Listener {
         }
 
         updatePageInfo(allShops.size());
+
+        // 根据当前页码设置分页按钮的可见性
+        setPaginationVisibility();
+    }
+
+    private void setPaginationVisibility() {
+        List<Shop> allShops = shopManager.getShops();
+        int totalPages = (int) Math.ceil((double) allShops.size() / ITEMS_PER_PAGE);
+
+        // 如果是第一页，隐藏“上一页”按钮
+        if (currentPage == 1) {
+            inventory.setItem(PREV_PAGE_SLOT, null);
+        } else {
+            inventory.setItem(PREV_PAGE_SLOT, createNavigationItem(Material.ARROW, "§a上一页"));
+        }
+
+        // 如果是最后一页，隐藏“下一页”按钮
+        if (currentPage == totalPages) {
+            inventory.setItem(NEXT_PAGE_SLOT, null);
+        } else {
+            inventory.setItem(NEXT_PAGE_SLOT, createNavigationItem(Material.ARROW, "§a下一页"));
+        }
     }
 
     private ItemStack createShopItem(Shop shop) {
@@ -202,6 +223,8 @@ public class ShopBrowseGui implements InventoryHolder, Listener {
     }
 
     public void open(Player player) {
+        inventory = Bukkit.createInventory(this, 54, "§b§l全服商店");
+        initializeLayout();
         loadPage();
         player.openInventory(inventory);
     }

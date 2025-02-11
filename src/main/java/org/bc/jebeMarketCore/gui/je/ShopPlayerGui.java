@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShopPlayerGui implements InventoryHolder, Listener {
+public class ShopPlayerGui implements InventoryHolder {
 
     private final JebeMarket plugin;
     private final ShopManager shopManager;
@@ -29,39 +29,11 @@ public class ShopPlayerGui implements InventoryHolder, Listener {
         this.plugin = plugin;
         this.shopManager = shopManager1;
         this.shopItemList = new ArrayList<>(); // 初始化为空列表
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
     public @NotNull Inventory getInventory() {
         return inventory;
-    }
-
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        // 处理主界面点击
-        if (event.getInventory().getHolder() instanceof ShopPlayerGui) {
-            event.setCancelled(true);
-            Player player = (Player) event.getWhoClicked();
-            int i = event.getRawSlot();
-
-            // 检查 shopItemList 是否为空
-            if (shopItemList == null || i >= shopItemList.size()) {
-                return; // 如果为空或索引超出范围，直接返回
-            }
-
-            try {
-                ShopItem shopItem = shopItemList.get(i);
-                // 处理点击事件
-                // 示例：购买商品
-                if (shopItem != null) {
-                    player.sendMessage("§a你点击了: " + shopItem.getUuid());
-                }
-            } catch (Exception e) {
-                player.closeInventory();
-            }
-
-        }
     }
 
     public void open(Shop shop, Player player) {
@@ -70,7 +42,7 @@ public class ShopPlayerGui implements InventoryHolder, Listener {
 
         // 获取商店商品列表
         List<ShopItem> shopItems = shopManager.getItems(shop.getUuid());
-        this.shopItemList = shopItems; // 初始化 shopItemList
+        this.shopItemList = shopItems;
 
         // 遍历商品并填充库存
         for (int i = 0; i < shopItems.size(); i++) {
@@ -96,8 +68,29 @@ public class ShopPlayerGui implements InventoryHolder, Listener {
                 break; // 如果超出库存大小，停止填充
             }
         }
-
         // 打开库存
         player.openInventory(inventory);
+    }
+
+    public void handleShopPlayerGuiClick(InventoryClickEvent event) {
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        int i = event.getRawSlot();
+
+        // 检查 shopItemList 是否为空
+        if (shopItemList == null || i >= shopItemList.size()) {
+            return; // 如果为空或索引超出范围，直接返回
+        }
+
+        try {
+            ShopItem shopItem = shopItemList.get(i);
+            // TODO：购买商品
+            if (shopItem != null) {
+                player.sendMessage("§a你点击了: " + shopItem.getUuid());
+            }
+        } catch (Exception e) {
+            player.closeInventory();
+        }
+
     }
 }

@@ -22,12 +22,9 @@ import org.bukkit.plugin.Plugin;
 import java.util.Arrays;
 import java.util.List;
 
-public class ShopMainGui implements InventoryHolder, Listener {
+public class ShopMainGui implements InventoryHolder {
     private final Inventory inventory;
-    private final Plugin plugin;
-    private final ShopManager shopManager;
-    private final PlayerHeadManager playerHeadManager;
-    private final ShopBrowseGui shopBrowseGui;
+    private final ShopBrowseGui shopBrowseGui1;
 
     // 按钮位置定义
     private static final int[] BORDER_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53};
@@ -41,14 +38,9 @@ public class ShopMainGui implements InventoryHolder, Listener {
     public static final int RECYCLE_SHOP_SLOT = 29;
     public static final int MY_RECYCLE_SLOT = 31;
 
-    public ShopMainGui(JebeMarket plugin, ShopManager shopManager, PlayerHeadManager playerHeadManager) {
-        this.plugin = plugin;
-        this.shopManager = shopManager;
-        this.playerHeadManager = playerHeadManager;
-        this.inventory = Bukkit.createInventory(this, 54, "§6§l市场中心");
-        initializeItems();
-        Bukkit.getPluginManager().registerEvents(this, plugin);
-        shopBrowseGui = new ShopBrowseGui(plugin, shopManager, playerHeadManager);
+    public ShopMainGui(JebeMarket plugin, ShopBrowseGui shopBrowseGui) {
+        shopBrowseGui1 = shopBrowseGui;
+        inventory = Bukkit.createInventory(this, 54, "§6§l市场中心");
     }
 
     private void initializeItems() {
@@ -126,6 +118,7 @@ public class ShopMainGui implements InventoryHolder, Listener {
     }
 
     public void open(Player player) {
+        initializeItems();
         player.openInventory(inventory);
     }
 
@@ -134,44 +127,40 @@ public class ShopMainGui implements InventoryHolder, Listener {
         return inventory;
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getInventory().getHolder() instanceof ShopMainGui) {
-            event.setCancelled(true);
-            Player player = (Player) event.getWhoClicked();
-            int slot = event.getRawSlot();
+    public void handleShopMainGuiClick(InventoryClickEvent event) {
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        int slot = event.getRawSlot();
 
-            switch (slot) {
-                case BROWSE_SHOP_SLOT:
-                    // 打开商店浏览界面
-                    shopBrowseGui.open(player);
-                    break;
-                case MY_SHOP_SLOT:
-                    // 打开我的商铺管理界面
-                    // TODO: 实现我的商铺管理界面
-                    player.sendMessage("§a即将打开我的商铺管理界面");
-                    break;
-                case PAWN_SHOP_SLOT:
-                    // 打开典当行界面
-                    // TODO: 实现典当行界面
-                    player.sendMessage("§a即将打开典当行界面");
-                    break;
-                case MY_PAWN_SLOT:
-                    // 打开我的典当行管理界面
-                    // TODO: 实现我的典当行管理界面
-                    player.sendMessage("§a即将打开我的典当行管理界面");
-                    break;
-                case RECYCLE_SHOP_SLOT:
-                    // 打开回收铺界面
-                    // TODO: 实现回收铺界面
-                    player.sendMessage("§a即将打开回收铺界面");
-                    break;
-                case MY_RECYCLE_SLOT:
-                    // 打开我的回收铺管理界面
-                    // TODO: 实现我的回收铺管理界面
-                    player.sendMessage("§a即将打开我的回收铺管理界面");
-                    break;
-            }
+        switch (slot) {
+            case BROWSE_SHOP_SLOT:
+                shopBrowseGui1.open(player);
+                break;
+            case MY_SHOP_SLOT:
+                // 打开我的商铺管理界面
+                // TODO: 实现我的商铺管理界面
+                player.sendMessage("§a即将打开我的商铺管理界面");
+                break;
+            case PAWN_SHOP_SLOT:
+                // 打开典当行界面
+                // TODO: 实现典当行界面
+                player.sendMessage("§a即将打开典当行界面");
+                break;
+            case MY_PAWN_SLOT:
+                // 打开我的典当行管理界面
+                // TODO: 实现我的典当行管理界面
+                player.sendMessage("§a即将打开我的典当行管理界面");
+                break;
+            case RECYCLE_SHOP_SLOT:
+                // 打开回收铺界面
+                // TODO: 实现回收铺界面
+                player.sendMessage("§a即将打开回收铺界面");
+                break;
+            case MY_RECYCLE_SLOT:
+                // 打开我的回收铺管理界面
+                // TODO: 实现我的回收铺管理界面
+                player.sendMessage("§a即将打开我的回收铺管理界面");
+                break;
         }
     }
 }

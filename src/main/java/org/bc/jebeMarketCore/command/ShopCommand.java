@@ -6,6 +6,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.config.Configuration;
+import org.bc.jebeMarketCore.gui.je.GuiManager;
 import org.bc.jebeMarketCore.gui.je.ShopMainGui;
 import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
@@ -30,15 +31,15 @@ public class ShopCommand implements CommandExecutor {
     private final Configuration config;
     private final PlayerInputHandler inputHandler;
     private final PlayerHeadManager playerHeadManager;
-    private final ShopMainGui shopMainGui;
+    private final GuiManager guiManager;
 
-    public ShopCommand(JebeMarket plugin, ShopManager shopManager, Configuration config, PlayerInputHandler inputHandler, PlayerHeadManager playerHeadManager) {
+    public ShopCommand(JebeMarket plugin, ShopManager shopManager, Configuration config, PlayerInputHandler inputHandler, PlayerHeadManager playerHeadManager, GuiManager guiManager) {
         this.plugin = plugin;
         this.shopManager = shopManager;
         this.config = config;
         this.inputHandler = inputHandler;
         this.playerHeadManager = playerHeadManager;
-        this.shopMainGui = new ShopMainGui(plugin, shopManager, playerHeadManager);
+        this.guiManager = guiManager;
     }
 
     @Override
@@ -91,7 +92,7 @@ public class ShopCommand implements CommandExecutor {
 
     private void handleGui(@NotNull CommandSender sender, @NotNull String[] args) {
         Player player = (Player) sender;
-        shopMainGui.open(player);
+        guiManager.openShopMainGui(player);
     }
 
     private void handleCreate(CommandSender sender, String[] args) {

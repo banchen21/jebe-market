@@ -4,7 +4,7 @@ import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.command.ShopCommand;
 import org.bc.jebeMarketCore.command.ShopTabCommand;
 import org.bc.jebeMarketCore.config.Configuration;
-import org.bc.jebeMarketCore.listeners.GuiListener;
+import org.bc.jebeMarketCore.gui.je.GuiManager;
 import org.bc.jebeMarketCore.listeners.PlayerListener;
 import org.bc.jebeMarketCore.repository.ShopServiceImpl;
 import org.bc.jebeMarketCore.service.ShopManagerImpl;
@@ -32,6 +32,7 @@ public final class JebeMarket extends JavaPlugin {
     YamlConfiguration i18nConfig;
     PlayerInputHandler inputHandler;
     PlayerHeadManager playerHeadManager;
+    GuiManager guiManager;
 
     @Override
     public void onEnable() {
@@ -59,17 +60,18 @@ public final class JebeMarket extends JavaPlugin {
         inputHandler = new PlayerInputHandler(this);
 
         playerHeadManager = new PlayerHeadManager(this);
+        guiManager = new GuiManager(this, shopManager, playerHeadManager);
         // 注册命令
         PluginCommand shopCommand = getCommand("shop");
         if (shopCommand != null) {
-            shopCommand.setExecutor(new ShopCommand(this, shopManager, config, inputHandler, playerHeadManager));
+            shopCommand.setExecutor(new ShopCommand(this, shopManager, config, inputHandler, playerHeadManager, guiManager));
             shopCommand.setTabCompleter(new ShopTabCommand(shopManager, config, inputHandler));
         }
 
         //        注册事件监听
 //        getServer().getPluginManager().registerEvents(new ShopPlayerGuiListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, playerHeadManager), this);
-        getServer().getPluginManager().registerEvents(new GuiListener(this, shopManager, playerHeadManager), this);
+//        getServer().getPluginManager().registerEvents(new GuiListener(this, shopManager, playerHeadManager), this);
 
         getLogger().info("JebeMarketCore 已启用");
 
