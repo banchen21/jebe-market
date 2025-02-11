@@ -129,11 +129,6 @@ public class ShopCommand implements CommandExecutor {
         }
     }
 
-    // 验证商铺类型的辅助方法
-    private boolean isValidShopType(String shopType) {
-        return shopType.equals("shop") || shopType.equals("pawnshop");
-    }
-
     private void handleEdit(CommandSender sender, String[] args) {
         if (!checkPermission(sender, "jebemarket.edit")) return;
         if (args.length < 3) {
@@ -468,6 +463,7 @@ public class ShopCommand implements CommandExecutor {
         sender.sendMessage(color("&e/shop list &7- 列出所有商铺"));
     }
 
+//    TODO 权限验证
     private boolean checkPermission(CommandSender sender, String permission) {
         if (!sender.hasPermission(permission) && !sender.hasPermission("jebemarket.admin")) {
             sender.sendMessage(color("&c你没有执行此操作的权限"));

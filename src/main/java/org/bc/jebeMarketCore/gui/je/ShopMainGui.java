@@ -1,30 +1,22 @@
 package org.bc.jebeMarketCore.gui.je;
 
-import ca.tweetzy.flight.comp.enums.CompMaterial;
-import ca.tweetzy.flight.utils.QuickItem;
 import org.bc.jebeMarketCore.JebeMarket;
-import org.bc.jebeMarketCore.api.ShopManager;
-import org.bc.jebeMarketCore.model.Shop;
 import org.bc.jebeMarketCore.utils.ItemBuilder;
-import org.bc.jebeMarketCore.utils.PlayerHeadManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class ShopMainGui implements InventoryHolder {
     private final Inventory inventory;
     private final ShopBrowseGui shopBrowseGui1;
+    private final MyShopGui myShopGui;
 
     // 按钮位置定义
     private static final int[] BORDER_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53};
@@ -32,14 +24,15 @@ public class ShopMainGui implements InventoryHolder {
 
     // 功能按钮槽位（第三行居中布局）
     public static final int BROWSE_SHOP_SLOT = 20;
-    public static final int MY_SHOP_SLOT = 22;
+    public static final int MY_SHOP_SLOT = 29;
     public static final int PAWN_SHOP_SLOT = 24;
     public static final int MY_PAWN_SLOT = 33;
-    public static final int RECYCLE_SHOP_SLOT = 29;
+    public static final int RECYCLE_SHOP_SLOT = 22;
     public static final int MY_RECYCLE_SLOT = 31;
 
-    public ShopMainGui(JebeMarket plugin, ShopBrowseGui shopBrowseGui) {
+    public ShopMainGui(JebeMarket plugin, ShopBrowseGui shopBrowseGui, MyShopGui myShopGui) {
         shopBrowseGui1 = shopBrowseGui;
+        this.myShopGui = myShopGui;
         inventory = Bukkit.createInventory(this, 54, "§6§l市场中心");
     }
 
@@ -137,9 +130,7 @@ public class ShopMainGui implements InventoryHolder {
                 shopBrowseGui1.open(player);
                 break;
             case MY_SHOP_SLOT:
-                // 打开我的商铺管理界面
-                // TODO: 实现我的商铺管理界面
-                player.sendMessage("§a即将打开我的商铺管理界面");
+                myShopGui.open(player);
                 break;
             case PAWN_SHOP_SLOT:
                 // 打开典当行界面

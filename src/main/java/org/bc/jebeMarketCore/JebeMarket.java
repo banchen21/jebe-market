@@ -60,7 +60,7 @@ public final class JebeMarket extends JavaPlugin {
         inputHandler = new PlayerInputHandler(this);
 
         playerHeadManager = new PlayerHeadManager(this);
-        guiManager = new GuiManager(this, shopManager, playerHeadManager);
+        guiManager = new GuiManager(this, shopManager, playerHeadManager, inputHandler);
         // 注册命令
         PluginCommand shopCommand = getCommand("shop");
         if (shopCommand != null) {
@@ -68,10 +68,7 @@ public final class JebeMarket extends JavaPlugin {
             shopCommand.setTabCompleter(new ShopTabCommand(shopManager, config, inputHandler));
         }
 
-        //        注册事件监听
-//        getServer().getPluginManager().registerEvents(new ShopPlayerGuiListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this, playerHeadManager), this);
-//        getServer().getPluginManager().registerEvents(new GuiListener(this, shopManager, playerHeadManager), this);
 
         getLogger().info("JebeMarketCore 已启用");
 
