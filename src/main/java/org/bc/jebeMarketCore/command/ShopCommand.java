@@ -7,7 +7,6 @@ import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.config.Configuration;
 import org.bc.jebeMarketCore.gui.je.GuiManager;
-import org.bc.jebeMarketCore.gui.je.ShopMainGui;
 import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
 import org.bc.jebeMarketCore.utils.MessageUtils;
