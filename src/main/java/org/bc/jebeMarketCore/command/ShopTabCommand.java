@@ -1,11 +1,11 @@
 package org.bc.jebeMarketCore.command;
 
 import lombok.extern.slf4j.Slf4j;
-import org.bc.jebeMarketCore.api.ItemManager;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.config.Configuration;
-import org.bc.jebeMarketCore.model.Item;
+import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
+import org.bc.jebeMarketCore.utils.PlayerInputHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -22,12 +22,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ShopTabCommand implements TabCompleter {
     private final ShopManager shopManager;
-    private final ItemManager itemManager;
     private final Configuration config;
 
-    public ShopTabCommand(ShopManager shopManager, ItemManager itemManager, Configuration config) {
+    public ShopTabCommand(ShopManager shopManager, Configuration config, PlayerInputHandler inputHandler) {
         this.shopManager = shopManager;
-        this.itemManager = itemManager;
         this.config = config;
     }
 
@@ -58,17 +56,15 @@ public class ShopTabCommand implements TabCompleter {
     }
 
     private void handleFifthArgument(@NotNull CommandSender sender, @NotNull String[] args, List<String> completions, boolean isAdmin) {
-        if (args[0].equals("item") && args[1].equals("edit") && args.length == 5) {
+        if (args[0].equals("item") && args[1].equals("edit") && args.length == 4) {
             completions.add("price");
-            Shop shop = shopManager.getShop(args[2]);
-            if (!shop.isShopType()) {
-                completions.add("amount");
-            }
         }
     }
 
     private void handleFirstArgument(CommandSender sender, List<String> completions) {
         if (hasPermission(sender)) {
+            completions.add("gui");
+            completions.add("open");
             completions.add("create");
             completions.add("list");
             completions.add("edit");
@@ -84,15 +80,11 @@ public class ShopTabCommand implements TabCompleter {
             case "edit":
                 completions.addAll(List.of("name", "lore", "owner", "type"));
                 break;
-            case "delete":
-            case "info":
+            case "delete", "open", "info":
                 completions.addAll(getOwnedShopName(sender, isAdmin));
                 break;
             case "item":
                 completions.addAll(List.of("up", "down", "info", "edit"));
-                break;
-            case "create":
-                completions.addAll(List.of("shop", "pawnshop"));
                 break;
         }
     }
@@ -134,8 +126,6 @@ public class ShopTabCommand implements TabCompleter {
         if ("edit".equalsIgnoreCase(arg0)) {
             if ("owner".equalsIgnoreCase(arg1)) {
                 Bukkit.getOnlinePlayers().forEach(p -> completions.add(p.getName()));
-            } else if ("type".equalsIgnoreCase(arg1)) {
-                completions.addAll(List.of("shop", "pawnshop"));
             }
         } else if ("item".equalsIgnoreCase(arg0)) {
             if ("up".equalsIgnoreCase(arg1)) {
@@ -153,8 +143,8 @@ public class ShopTabCommand implements TabCompleter {
 
     private void handleItemDownCompletion(UUID shopUuid, List<String> completions) {
         try {
-            List<Item> items = itemManager.getItems(shopUuid);
-            items.forEach(item -> {
+            List<ShopItem> shopItems = shopManager.getItems(shopUuid);
+            shopItems.forEach(item -> {
                 completions.add(item.getUuid().toString());
             });
         } catch (IllegalArgumentException e) {

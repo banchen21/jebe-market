@@ -1,25 +1,22 @@
 package org.bc.jebeMarketCore;
 
-import org.bc.jebeMarketCore.api.ItemManager;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.command.ShopCommand;
 import org.bc.jebeMarketCore.command.ShopTabCommand;
 import org.bc.jebeMarketCore.config.Configuration;
-import org.bc.jebeMarketCore.database.ItemSqlite3Util;
+import org.bc.jebeMarketCore.listeners.GuiListener;
 import org.bc.jebeMarketCore.listeners.PlayerListener;
-import org.bc.jebeMarketCore.repository.ItemServiceImpl;
 import org.bc.jebeMarketCore.repository.ShopServiceImpl;
-import org.bc.jebeMarketCore.service.ItemManagerImpl;
 import org.bc.jebeMarketCore.service.ShopManagerImpl;
 import org.bc.jebeMarketCore.database.MysqlUtil;
 import org.bc.jebeMarketCore.database.ShopSqlite3Util;
+import org.bc.jebeMarketCore.utils.PlayerHeadManager;
+import org.bc.jebeMarketCore.utils.PlayerInputHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,9 +28,10 @@ public final class JebeMarket extends JavaPlugin {
 
     //    全局路径
     ShopManager shopManager;
-    ItemManager itemManager;
     Configuration config;
     YamlConfiguration i18nConfig;
+    PlayerInputHandler inputHandler;
+    PlayerHeadManager playerHeadManager;
 
     @Override
     public void onEnable() {
@@ -44,12 +42,10 @@ public final class JebeMarket extends JavaPlugin {
 
         // 初始化数据存储（示例使用内存存储）
         ShopServiceImpl shopService = null;
-        ItemServiceImpl itemService = null;
         switch (config.getStorageType()) {
             case sqlite -> {
                 try {
                     shopService = new ShopServiceImpl(new ShopSqlite3Util(this));
-                    itemService = new ItemServiceImpl(new ItemSqlite3Util(this));
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -60,25 +56,24 @@ public final class JebeMarket extends JavaPlugin {
         }
 
         shopManager = new ShopManagerImpl(shopService);
-        itemManager = new ItemManagerImpl(itemService);
+        inputHandler = new PlayerInputHandler(this);
 
+        playerHeadManager = new PlayerHeadManager(this);
         // 注册命令
         PluginCommand shopCommand = getCommand("shop");
         if (shopCommand != null) {
-            shopCommand.setExecutor(new ShopCommand(shopManager, itemManager, config));
-            shopCommand.setTabCompleter(new ShopTabCommand(shopManager, itemManager, config));
+            shopCommand.setExecutor(new ShopCommand(this, shopManager, config, inputHandler, playerHeadManager));
+            shopCommand.setTabCompleter(new ShopTabCommand(shopManager, config, inputHandler));
         }
 
         //        注册事件监听
-        getServer().
+//        getServer().getPluginManager().registerEvents(new ShopPlayerGuiListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(this, playerHeadManager), this);
+        getServer().getPluginManager().registerEvents(new GuiListener(this, shopManager, playerHeadManager), this);
 
-                getPluginManager().
+        getLogger().info("JebeMarketCore 已启用");
 
-                registerEvents(new PlayerListener(this), this);
-
-        getLogger().
-
-                info("JebeMarketCore 已启用");
+        playerHeadManager.scheduleCacheCleanup(); // 启动缓存清理
     }
 
     private void checkFilesystem() {

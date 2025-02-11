@@ -1,7 +1,5 @@
-package org.bc.jebeMarketCore.MarketPulseUtil;
+package org.bc.jebeMarketCore.utils;
 
-import ca.tweetzy.skulls.flight.utils.QuickItem;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;

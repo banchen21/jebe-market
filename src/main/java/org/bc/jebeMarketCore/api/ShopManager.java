@@ -1,6 +1,8 @@
 package org.bc.jebeMarketCore.api;
 
+import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -25,10 +27,9 @@ public interface ShopManager {
      *
      * @param uniqueId 商店所有者的唯一ID
      * @param shopName 商店名称
-     * @param shopType 商店类型
      * @return 返回新创建的商店对象
      */
-    Shop createShop(@NotNull UUID uniqueId, String shopName, UUID owner, boolean shopType);
+    Shop createShop(@NotNull UUID uniqueId, String shopName, UUID owner);
 
     /**
      * 根据商店的UUID获取商店信息
@@ -37,6 +38,8 @@ public interface ShopManager {
      * @return 返回对应的商店对象
      */
     Shop getShop(String name);
+
+    Shop getShop(UUID uuid);
 
     boolean setShop(Shop shop);
 
@@ -48,4 +51,19 @@ public interface ShopManager {
      * @return 如果删除成功返回true，否则返回false
      */
     boolean deleteShop(UUID shopUuid, boolean b);
+
+
+    List<Shop> getShops();
+
+    int getItemCount(UUID shopUuid);
+
+    ShopItem addItem(UUID shopUuid, @NotNull ItemStack clone);
+
+    ItemStack removeItem(Shop shop, UUID itemId);
+
+    List<ShopItem> getItems(UUID shopUuid);
+
+    ShopItem getItem(UUID shopUuid, UUID itemId);
+
+    boolean updateItem(ShopItem shopItem);
 }

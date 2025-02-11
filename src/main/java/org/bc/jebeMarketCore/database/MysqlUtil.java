@@ -2,8 +2,10 @@ package org.bc.jebeMarketCore.database;
 
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.dao.ShopDao;
+import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
 import org.bc.jebeMarketCore.repository.ShopRepository;
+import org.bukkit.inventory.ItemStack;
 import org.jdbi.v3.core.Jdbi;
 
 import java.util.List;
@@ -34,17 +36,12 @@ public class MysqlUtil implements ShopRepository {
     }
 
     @Override
-    public boolean updateShopType(Shop shop) {
-        return false;
-    }
-
-    @Override
     public boolean updateShopLore(Shop shop) {
         return false;
     }
 
     @Override
-    public Shop findByUuid(String name) {
+    public Shop findByUuid(UUID uuid) {
         return null;
     }
 
@@ -61,5 +58,35 @@ public class MysqlUtil implements ShopRepository {
     @Override
     public boolean deleteShop(UUID uuid) {
         return false;
+    }
+
+    @Override
+    public boolean addItem(ShopItem shopItem) {
+        return false;
+    }
+
+    @Override
+    public List<ShopItem> getItemsByShop(UUID shopUuid) {
+        return List.of();
+    }
+
+    @Override
+    public ItemStack removeItem(Shop shop, UUID itemId) {
+        return null;
+    }
+
+    @Override
+    public ShopItem getItemById(UUID shopUuid, UUID itemId) {
+        return null;
+    }
+
+    @Override
+    public boolean updatePrice(ShopItem shopItem) {
+        return false;
+    }
+
+    @Override
+    public List<Shop> getAllShops() {
+        return List.of();
     }
 }
