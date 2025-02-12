@@ -6,6 +6,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.config.Configuration;
+import org.bc.jebeMarketCore.gui.je.GUIType;
 import org.bc.jebeMarketCore.gui.je.GuiManager;
 import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
@@ -92,7 +93,7 @@ public class ShopCommand implements CommandExecutor {
             sender.sendMessage(color("&c商铺不存在"));
             return;
         }
-        guiManager.openShopPlayerGui(shop, (Player) sender);
+        guiManager.openGuiWithContext((Player) sender, GUIType.PLAYER_SHOP, shop);
     }
 
     private void handleGui(@NotNull CommandSender sender, @NotNull String[] args) {
@@ -113,11 +114,15 @@ public class ShopCommand implements CommandExecutor {
 
         // 检查参数数量
         if (args.length < 2) {
-            sender.sendMessage(color("&c用法: /shop create  <shop> <名称>"));
+            sender.sendMessage(color("&c用法: /shop create  <shop> <新名称>"));
             return;
         }
 
         String shopName = args[1];
+        if (shopName.length() < 2 || shopName.length() > 16) {
+            player.sendMessage("§c新名称长度需在2-16字符之间");
+            return;
+        }
         Shop shop = shopManager.createShop(shopName, player.getUniqueId());
 
         // 处理商铺创建结果
@@ -174,6 +179,10 @@ public class ShopCommand implements CommandExecutor {
             return;
         }
         String newName = String.join(" ", Arrays.copyOfRange(args, 3, args.length));
+        if (newName.length() < 2 || newName.length() > 16) {
+            sender.sendMessage("§c名称长度需在2-16字符之间");
+            return;
+        }
         shop.setName(newName);
         if (shopManager.setShop(shop)) {
             sender.sendMessage(color("&a商铺名称已更新"));
@@ -184,10 +193,14 @@ public class ShopCommand implements CommandExecutor {
 
     private void handleEditLore(CommandSender sender, String[] args, Shop shop) {
         if (args.length < 3) {
-            sender.sendMessage(color("&c用法: /shop edit lore <Name> <描述内容>"));
+            sender.sendMessage(color("&c用法: /shop edit lore <Name> <介绍内容>"));
             return;
         }
         String lore = String.join(" ", Arrays.copyOfRange(args, 3, args.length));
+        if (lore.length() > 256) {
+            sender.sendMessage("§c介绍过长，最多256字符");
+            return;
+        }
         shop.setLore(lore);
         shopManager.setShop(shop);
         sender.sendMessage(color("&a商铺描述已更新"));

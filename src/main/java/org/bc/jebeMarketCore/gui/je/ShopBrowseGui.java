@@ -175,6 +175,7 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
                 GUIType.SHOP_EDIT,
                 shop
         );
+
     }
 
     private void handlePublicShopClick(Shop shop, Player player) {

@@ -120,7 +120,7 @@ public class ShopEditGui extends GuiManager.BaseGUI {
 
     private void handleNameEdit(Player player) {
         player.closeInventory();
-        inputHandler.requestInput(player, "请输入新名称（2-16字符）",
+        inputHandler.requestInput(player, "你还没有一个商铺，请输入新名称（2-16字符）以创建你的第一个商铺",
                 input -> {
                     if (input.length() < 2 || input.length() > 16) {
                         player.sendMessage("§c名称长度需在2-16字符之间");
@@ -153,12 +153,15 @@ public class ShopEditGui extends GuiManager.BaseGUI {
     }
 
     private void openItemManagement(Player player) {
-        // TODO: 跳转商品管理界面
-        player.sendMessage("§e商品管理功能开发中...");
-
+        Object[] context = {currentShop, ShopDetailsGui.Mode.EDIT};
+        guiManager.openGuiWithContext(player,
+                GUIType.ITEM_EDIT,
+                context
+        );
     }
 
     private void returnToPrevious(Player player) {
+        // 返回上一级
         guiManager.openGuiWithContext(player,
                 GUIType.MY_SHOP,
                 player.getUniqueId()
