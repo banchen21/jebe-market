@@ -3,3 +3,11 @@ language: cn
 # 存储方式: 文件、sqlite、mysql
 storage:
   type: sqlite
+# 创建商铺需要多少余额
+shop_create_cost: 100
+# 商铺修改name需要多少余额
+shop_rename_cost: 50
+# 商铺修改介绍需要多少余额
+shop_desc_cost: 50
+# 商品单价最大为多少
+max_price: 1000

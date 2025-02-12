@@ -1,8 +1,8 @@
 package org.bc.jebeMarketCore.service;
 
 import org.bc.jebeMarketCore.api.ShopManager;
-import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
+import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.repository.ShopServiceImpl;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -65,7 +65,7 @@ public class ShopManagerImpl implements ShopManager {
     @Override
     public ShopItem addItem(UUID shopUuid, @NotNull ItemStack clone) {
         ShopItem shopItem = new ShopItem(shopUuid, clone);
-        shopItem.setPrice(999999999.99);
+        shopItem.setPrice(9999999);
         if (shopService.addItem(shopItem)) {
             return shopItem;
         } else {

@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -126,7 +127,7 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
         List<String> lore = meta.getLore() != null ? meta.getLore() : new ArrayList<>();
 
         // 添加价格信息
-        lore.add("§7单价: §a" + shopItem.getPrice());
+        lore.add("§7单价: §a" + new DecimalFormat("#.00").format(shopItem.getPrice()));
         lore.add("§7库存: §a" + item.getAmount());
 
         // 模式相关操作提示
@@ -217,6 +218,10 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
                 input -> {
                     try {
                         double newPrice = Double.parseDouble(input);
+                        if (newPrice <= 0 || newPrice > 100000) {
+                            player.sendMessage("§c价格必须大于0");
+                            return;
+                        }
                         item.setPrice(newPrice);
                         shopManager.updateItem(item);
                         player.sendMessage("§a价格已更新！");
@@ -230,7 +235,8 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     }
 
     private void deleteItem(ShopItem item, Player player) {
-        shopManager.removeItem(currentShop, item.getUuid());
+//        TODO 移除商品
+//        shopManager.removeItem(currentShop, item.getUuid());
         player.sendMessage("§c商品已移除");
         refresh();
     }
