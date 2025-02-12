@@ -35,23 +35,20 @@ public class ShopManagerImpl implements ShopManager {
         Shop shop = new Shop(shopName, owner);
 
         Player player = plugin.getServer().getPlayer(owner);
-        assert player != null;
         if (isShopNameBanned(plugin.getConfig().getStringList("item_ban_words"), shopName)) {
-            player.sendMessage("§c商店创建失败！");
             player.sendMessage("§c商店名称包含违规字符！");
             return null;
         }
 //        获取玩家商铺数量
         if (shopService.getShopsByOwner(owner).size() >= plugin.getConfig().getInt("shop_create_limit")) {
-            player.sendMessage("§c商店创建失败！");
             player.sendMessage("§c商店创建数量已达上限！");
             return null;
         }
-        if (plugin.getLabor_econ().has(player, plugin.getConfig().getInt("shop_create_cost")) && shopService.createShop(shop)) {
-            plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getInt("shop_create_cost"));
-            player.sendMessage("§a商店创建成功！");
-            player.sendMessage("§a商店名称：" + shopName);
-            player.sendMessage("§a商店创建费用：" + plugin.getConfig().getInt("shop_create_cost") + plugin.getLabor_econ().getName());
+        if (plugin.getLabor_econ().has(player, plugin.getConfig().getDouble("shop_create_cost"))) {
+            plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getDouble("shop_create_cost"));
+        }
+        if (shopService.createShop(shop)) {
+            player.sendMessage("§a商店创建费用：" + plugin.getConfig().getInt("shop_create_cost"));
             return shop;
         }
         return null;
@@ -60,7 +57,7 @@ public class ShopManagerImpl implements ShopManager {
     //    禁止使用的商品名称关键词
     public boolean isShopNameBanned(List<String> stringList, String shopName) {
         for (String s : stringList) {
-            if (s.equals(shopName)) {
+            if (shopName.contains(s)) {
                 return true;
             }
         }
@@ -80,7 +77,6 @@ public class ShopManagerImpl implements ShopManager {
     @Override
     public boolean updateShopName(Shop shop) {
         Player player = plugin.getServer().getPlayer(shop.getOwner());
-        assert player != null;
         if (plugin.getLabor_econ().has(player, plugin.getConfig().getInt("shop_rename_cost"))) {
             if (shopService.updateShopName(shop)) {
                 plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getInt("shop_rename_cost"));
@@ -93,7 +89,6 @@ public class ShopManagerImpl implements ShopManager {
     @Override
     public boolean updateShopOwner(Shop shop) {
         Player player = plugin.getServer().getPlayer(shop.getOwner());
-        assert player != null;
         List<ShopItem> shopItems = shopService.getItemsByShop(shop.getUuid());
         if (shopItems.size() >= plugin.getConfig().getInt("shop_create_limit")) {
             player.sendMessage("§c商店添加抵达上限");
@@ -111,7 +106,6 @@ public class ShopManagerImpl implements ShopManager {
     @Override
     public boolean updateShopLore(Shop shop) {
         Player player = plugin.getServer().getPlayer(shop.getOwner());
-        assert player != null;
         if (plugin.getLabor_econ().has(player, plugin.getConfig().getInt("shop_desc_cost"))) {
             if (shopService.updateShopLore(shop)) {
                 plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getInt("shop_desc_cost"));
@@ -142,7 +136,6 @@ public class ShopManagerImpl implements ShopManager {
 
         Shop shop = shopService.findByUuid(shopUuid);
         Player player = plugin.getServer().getPlayer(shop.getOwner());
-        assert player != null;
         List<ShopItem> shopItems = shopService.getItemsByShop(shopUuid);
         if (shopItems.size() >= plugin.getConfig().getInt("shop_item_limit")) {
             player.sendMessage("§c商店添加抵达上限");
@@ -217,7 +210,6 @@ public class ShopManagerImpl implements ShopManager {
     public boolean updatePrice(ShopItem shopItem) {
         Shop shop = shopService.findByUuid(shopItem.getShopuuid());
         Player player = plugin.getServer().getPlayer(shop.getOwner());
-        assert player != null;
         if (shopItem.getPrice() <= plugin.getConfig().getInt("max_price")) {
             return shopService.updatePrice(shopItem);
         } else {

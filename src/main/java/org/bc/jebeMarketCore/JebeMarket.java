@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Level;
 
 public final class JebeMarket extends JavaPlugin {
@@ -32,12 +33,14 @@ public final class JebeMarket extends JavaPlugin {
     //    全局路径
     ShopManager shopManager;
     Configuration config;
+    @Getter
     YamlConfiguration i18nConfig;
     PlayerInputHandler inputHandler;
     PlayerHeadManager playerHeadManager;
     GuiManager guiManager;
     @Getter
     Economy labor_econ;
+
     @Override
     public void onEnable() {
         // 初始化配置
@@ -48,9 +51,9 @@ public final class JebeMarket extends JavaPlugin {
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp != null) {
                 labor_econ = rsp.getProvider();
-                getLogger().info("Economy provider successfully loaded.");
+                getLogger().info(i18nConfig.getString("init.message"));
             } else {
-                getLogger().warning("Vault does not provide Economy service.");
+                getLogger().warning(i18nConfig.getString("vault.no_economy_service"));
             }
         } else {
             getServer().getPluginManager().disablePlugin(this);
@@ -87,7 +90,7 @@ public final class JebeMarket extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this, playerHeadManager), this);
 
-        getLogger().info("JebeMarketCore 已启用");
+        getLogger().info(i18nConfig.getString("plugin.enabled"));
 
         playerHeadManager.scheduleCacheCleanup(); // 启动缓存清理
     }
@@ -97,17 +100,24 @@ public final class JebeMarket extends JavaPlugin {
             Path tempFile = Files.createTempFile(Paths.get("plugins/JebeMarket/"), "test", ".tmp");
             Files.delete(tempFile);
         } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "文件系统检测失败，请确保：", e);
-            getLogger().severe("1. 插件目录可写");
-            getLogger().severe("2. 有足够的磁盘空间");
-            getLogger().severe("3. 没有杀毒软件拦截文件操作");
+            getLogger().log(Level.SEVERE, i18nConfig.getString("filesystem.check.failed"), e);
+            getLogger().severe(i18nConfig.getString("filesystem.check.requirements.writable"));
+            getLogger().severe(i18nConfig.getString("filesystem.check.requirements.disk_space"));
+            getLogger().severe(i18nConfig.getString("filesystem.check.requirements.antivirus"));
             Bukkit.getPluginManager().disablePlugin(this);
         }
     }
 
     @Override
     public void onDisable() {
-
+        getLogger().info(i18nConfig.getString("plugin.disabled"));
     }
 
+    public String getString(String key) {
+        return i18nConfig.getString(key);
+    }
+
+    public List<String> getStringList(String s) {
+        return i18nConfig.getStringList(s);
+    }
 }

@@ -1,0 +1,172 @@
+# 初始化状态
+init:
+  message: '&a成功加载经济提供者'
+
+# Vault 集成
+vault:
+  no_economy_service: '&cVault 未提供经济服务'
+
+# 文件系统检测
+filesystem:
+  check:
+    failed: '&c文件系统检测失败，请确保：'
+    requirements:
+      writable: '&c1. 插件目录可写'
+      disk_space: '&c2. 有足够的磁盘空间'
+      antivirus: '&c3. 没有杀毒软件拦截文件操作'
+
+# 插件状态
+plugin:
+  enabled: '&aJebeMarketCore 已启用'
+  disabled: '&cJebeMarketCore 已停用'
+
+# 数据库连接
+database:
+  connection_failed: '&c数据库连接失败，请检查配置'
+  sql_error: '&c数据库操作异常'
+
+# 命令相关
+commands:
+  open:
+    usage: '&c用法: /shop open <shop>'
+  # 通用错误
+  errors:
+    unknown_error: '&c未知错误'
+    unknown_command: '&c未知命令，使用/shop help 查看帮助'
+    player_only: '&c只有玩家可以执行此操作'
+    invalid_shop_name: '&c无效的商铺名'
+    shop_not_found: '&c商铺不存在'
+    no_permission: '&c你没有权限修改此商铺'
+    confirmation_required: '&c请在命令末尾添加 yes 确认操作'
+
+  # 创建命令
+  create:
+    usage: '&c用法: /shop create <shop> <新名称>'
+    errors:
+      name_length: '§c新名称长度需在2-16字符之间'
+      duplicate_name: '&c创建商铺失败，检查名称发现重复'
+    success: '&a成功创建商店 %s！UID: %s'
+
+  # 编辑命令
+  edit:
+    usage: '&c用法: /shop edit <name/lore/owner/type> <Name> [参数]'
+    errors:
+      invalid_type: '&c无效的编辑类型'
+    name:
+      usage: '&c用法: /shop edit name <Name> <新名称>'
+      errors:
+        length: '§c名称长度需在2-16字符之间'
+        duplicate: '&c名称更新失败，可能重复'
+      success: '&a商铺名称已更新'
+    lore:
+      usage: '&c用法: /shop edit lore <Name> <介绍内容>'
+      errors:
+        length: '§c介绍过长，最多256字符'
+      success: '&a商铺描述已更新'
+    owner:
+      usage: '&c用法: /shop edit owner <商品名> <玩家> yes'
+      errors:
+        player_offline: '&c目标玩家不在线'
+      success: '&a已将商铺转让给 %s'
+
+  # 删除命令
+  delete:
+    usage: '&c用法: /shop delete <Name> yes'
+    errors:
+      not_empty: '&c删除失败，商铺内有商品，请先清空商品'
+    success: '&a商店已删除'
+
+  # 商品管理
+  item:
+    errors:
+      invalid_operation: '&4用法: /shop item <up/down/info/edit>'
+      invalid_source: '&c无效来源，可用 主手持/背包'
+      invalid_id: '&c无效的ID格式'
+      not_found: '&c商品不存在'
+    up:
+      usage: '&c用法: /shop item up <hand/inventory> <Name>'
+    down:
+      errors:
+        missing_id: '&c请输入要下架的商品ID'
+      usage: '&c用法: /shop item down <Name> <商品ID>'
+      success: '&a商品已下架'
+    edit:
+      usage: '&c/shop item edit <商店> <商品ID> <新价格>'
+      success: '&a单价已更新: %.2f'
+      error: '&c更新失败，请重试'
+    info:
+      empty: '&c该商店没有商品'
+
+  # 列表命令
+  list:
+    empty: '&e你还没有创建任何商铺'
+    header: '&6=== 你的商铺列表 ==='
+    entry: '&e%s &7(UID: &f%s&7) &8'
+
+  # 信息命令
+  info:
+    usage: '&c用法: /shop info <Name>'
+    header: '&6=== 商铺信息 ==='
+    entries:
+      uid: '&eUID: &f%s'
+      name: '&e名称: &f%s'
+      owner: '&e所有者: &f%s'
+      lore: '&e描述: &f%s'
+      item_count: '&e商品数量: &f%s'
+
+  # 帮助命令
+  help:
+    header: '&6=== 星际市集帮助 ==='
+    entries:
+      - '&e/shop create <名称> &7- 创建新商铺'
+      - '&e/shop edit <属性> <Name> [参数] &7- 编辑商铺'
+      - '&e/shop delete <Name> yes &7- 删除商铺'
+      - '&e/shop info <Name> &7- 查看商铺信息'
+      - '&e/shop item up <方式> <Name> &7- 上架商品'
+      - '&e/shop item down <Name> <ID> &7- 下架商品'
+      - '&e/shop list &7- 列出所有商铺'
+
+# 物品交互
+items:
+  inventory_full: '&c你的背包已满，商品已生成为掉落物'
+  transaction:
+    insufficient_funds: '&c余额不足无法购买'
+    success: '&a交易成功'
+
+# 界面文本
+ui:
+  shop_item_info:
+    unknown_item: '未知物品'
+    hover_text: 'UUID: %s'
+    price_format: '$%.2f'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

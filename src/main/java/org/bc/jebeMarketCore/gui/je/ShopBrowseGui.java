@@ -33,7 +33,7 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
 
     // 更新布局常量与参考页面一致
     private static final int BACK_SLOT = 0;
-    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52};
+    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53};
     private static final int PREV_PAGE_SLOT = 48;
     private static final int NEXT_PAGE_SLOT = 50;
     private static final int PAGE_INFO_SLOT = 49;

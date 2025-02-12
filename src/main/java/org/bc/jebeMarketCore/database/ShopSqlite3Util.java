@@ -50,14 +50,11 @@ public class ShopSqlite3Util implements ShopRepository {
         // 初始化 JDBI
         jdbi = Jdbi.create(dataSource);
         // 在初始化 JDBI 时注册类型转换器
-        jdbi.registerColumnMapper(UUID.class, (rs, columnNumber, ctx) ->
-                UUID.fromString(rs.getString(columnNumber))
-        );
+        jdbi.registerColumnMapper(UUID.class, (rs, columnNumber, ctx) -> UUID.fromString(rs.getString(columnNumber)));
         jdbi.registerArgument(new AbstractArgumentFactory<UUID>(Types.VARCHAR) {
             @Override
             protected Argument build(UUID value, ConfigRegistry config) {
-                return (position, statement, ctx) ->
-                        statement.setString(position, value.toString());
+                return (position, statement, ctx) -> statement.setString(position, value.toString());
             }
         });
 
@@ -78,8 +75,7 @@ public class ShopSqlite3Util implements ShopRepository {
                 Files.createDirectories(dir);
                 Path path = dir.resolve(uuid.toString());
 
-                try (FileInputStream fileInputStream = new FileInputStream(path.toFile());
-                     ObjectInputStream in = new ObjectInputStream(fileInputStream)) {
+                try (FileInputStream fileInputStream = new FileInputStream(path.toFile()); ObjectInputStream in = new ObjectInputStream(fileInputStream)) {
                     byte[] data = (byte[]) in.readObject();
                     ItemStack itemStack = ItemStorageUtil.deserializeItemStack(data);
                     return new ShopItem(uuid, shopuuid, price, itemStack);
@@ -95,12 +91,7 @@ public class ShopSqlite3Util implements ShopRepository {
         // 创建表
         jdbi.useHandle(handle -> {
             // 在 Sqlite3Util 的建表语句中修改主键为 uuid
-            handle.execute("CREATE TABLE IF NOT EXISTS shops (\n" +
-                    "  uuid TEXT NOT NULL PRIMARY KEY,\n" +  // 主键应为 uuid
-                    "  name TEXT NOT NULL UNIQUE,\n" +       // 确保商铺名称唯一
-                    "  owner TEXT NOT NULL,\n" +
-                    "  lore TEXT NOT NULL\n" +
-                    ");");
+            handle.execute("CREATE TABLE IF NOT EXISTS shops (" + "  uuid TEXT NOT NULL PRIMARY KEY," + "  name TEXT NOT NULL UNIQUE," + "  owner TEXT NOT NULL," + "  lore TEXT NOT NULL" + ");");
         });
 
         // 创建表
@@ -224,8 +215,7 @@ public class ShopSqlite3Util implements ShopRepository {
         try {
             return jdbi.withHandle(handle -> jdbi.withExtension(ShopDao.class, dao -> dao.getItemsByShop(shopuuid)));
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            return List.of();
         }
     }
 
@@ -236,8 +226,7 @@ public class ShopSqlite3Util implements ShopRepository {
 
         // 先读取文件内容
         ItemStack itemStack;
-        try (FileInputStream fileInputStream = new FileInputStream(itempath.toFile());
-             ObjectInputStream in = new ObjectInputStream(fileInputStream)) {
+        try (FileInputStream fileInputStream = new FileInputStream(itempath.toFile()); ObjectInputStream in = new ObjectInputStream(fileInputStream)) {
             byte[] data = (byte[]) in.readObject();
             itemStack = ItemStorageUtil.deserializeItemStack(data);
         } catch (IOException | ClassNotFoundException e) {
@@ -255,9 +244,7 @@ public class ShopSqlite3Util implements ShopRepository {
         }
 
         // 删除数据库记录
-        jdbi.useExtension(ShopDao.class, dao ->
-                dao.delete(shop.getUuid(), itemId)
-        );
+        jdbi.useExtension(ShopDao.class, dao -> dao.delete(shop.getUuid(), itemId));
 
         return itemStack;
     }

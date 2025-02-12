@@ -62,17 +62,15 @@ public class ShopTabCommand implements TabCompleter {
     }
 
     private void handleFirstArgument(CommandSender sender, List<String> completions) {
-        if (hasPermission(sender)) {
-            completions.add("gui");
-            completions.add("open");
-            completions.add("create");
-            completions.add("list");
-            completions.add("edit");
-            completions.add("delete");
-            completions.add("info");
-            completions.add("item");
-            completions.add("help");
-        }
+        completions.add("gui");
+        completions.add("open");
+        completions.add("create");
+        completions.add("list");
+        completions.add("edit");
+        completions.add("delete");
+        completions.add("info");
+        completions.add("item");
+        completions.add("help");
     }
 
     private void handleSecondArgument(CommandSender sender, String arg0, List<String> completions, boolean isAdmin) {
@@ -161,9 +159,5 @@ public class ShopTabCommand implements TabCompleter {
     private List<String> filterCompletions(List<String> completions, String[] args) {
         String lastArg = args[args.length - 1].toLowerCase();
         return completions.stream().filter(s -> s.toLowerCase().startsWith(lastArg)).sorted().collect(Collectors.toList());
-    }
-
-    private boolean hasPermission(CommandSender sender) {
-        return sender.hasPermission("jebemarket.user") || sender.hasPermission("jebemarket.admin");
     }
 }
