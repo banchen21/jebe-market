@@ -310,8 +310,8 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
                 input -> {
                     try {
                         double newPrice = Double.parseDouble(input);
-                        if (newPrice <= 0 || newPrice > 100000) {
-                            player.sendMessage("§c价格必须大于0且小于100000");
+                        if (newPrice <= 0 || newPrice > plugin.getConfig().getDouble("max_price")) {
+                            player.sendMessage("§c价格必须大于0且小于" + plugin.getConfig().getDouble("max_price"));
                             return;
                         }
                         item.setPrice(newPrice);

@@ -106,6 +106,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.github.MilkBowl</groupId>
+      <artifactId>VaultAPI</artifactId>
+      <version>1.7</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>ca.tweetzy</groupId>
       <artifactId>skulls</artifactId>
       <version>3.23.0</version>

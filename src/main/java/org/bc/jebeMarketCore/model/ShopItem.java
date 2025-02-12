@@ -23,7 +23,7 @@ public class ShopItem {
     public ShopItem(UUID shopUuid, ItemStack itemStack) {
         this.uuid = UUID.randomUUID();
         this.shopuuid = shopUuid;
-        this.price = 0.0;
+        this.price = 999999999.99;
         this.itemStack = itemStack;
     }
 

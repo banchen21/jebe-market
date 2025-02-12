@@ -164,6 +164,7 @@ public class ShopManagerImpl implements ShopManager {
         ItemStack handItem = player.getInventory().getItemInMainHand();
         if (handItem.getAmount() == 0) {
             player.sendMessage(color("&c请手持要上架的商品"));
+            return;
         }
         ShopItem shopItem = new ShopItem(shopUuid, handItem.clone());
         if (shopService.addItem(shopItem)) {
@@ -176,26 +177,25 @@ public class ShopManagerImpl implements ShopManager {
 
     @Override
     public void addInventoryItem(UUID shopUuid, Player player) {
-        Shop shop = shopService.findByUuid(shopUuid);
-        if (shop.getOwner() != player.getUniqueId()) {
-            player.sendMessage(color("&c你没有权限管理此商店"));
-        } else {
-            int count = 0;
-
-            for (ItemStack stack : player.getInventory().getContents()) {
-                if (stack != null && !stack.getType().isAir()) {
-                    ShopItem shopItem = new ShopItem(shopUuid, stack.clone());
-                    if (shopService.addItem(shopItem)) {
-                        stack.setAmount(0);
-                        player.sendMessage(color(String.format("&a成功上架 %s", shopItem.getUuid().toString())));
-                        count++;
-                    } else {
-                        player.sendMessage(color("&c添加商品失败"));
-                    }
+        // 如果玩家背包为空就返回
+        if (player.getInventory().isEmpty()) {
+            player.sendMessage(color("&c背包为空"));
+            return;
+        }
+        int count = 0;
+        for (ItemStack stack : player.getInventory().getContents()) {
+            if (stack != null && !stack.getType().isAir()) {
+                ShopItem shopItem = new ShopItem(shopUuid, stack.clone());
+                if (shopService.addItem(shopItem)) {
+                    stack.setAmount(0);
+                    player.sendMessage(color(String.format("&a成功上架 %s", shopItem.getUuid().toString())));
+                    count++;
+                } else {
+                    player.sendMessage(color("&c添加商品失败"));
                 }
             }
-            player.sendMessage(color(String.format("&a成功上架 %d 种物品", count)));
         }
+        player.sendMessage(color(String.format("&a成功上架 %d 种物品", count)));
     }
 
     @Override

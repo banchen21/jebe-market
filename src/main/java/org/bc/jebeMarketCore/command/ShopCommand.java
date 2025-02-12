@@ -395,7 +395,6 @@ public class ShopCommand implements CommandExecutor {
             }
             String isall = args[3];
             if (isall.equals("all")) {
-//                 获取所有itemId
                 List<ShopItem> shopItemList = shopManager.getItems(shop.getUuid());
                 shopItemList.forEach(item -> {
                     ItemStack itemStack = shopManager.removeItem(shop, item.getUuid());

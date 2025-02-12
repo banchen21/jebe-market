@@ -29,13 +29,13 @@ public class ShopEditGui extends GuiManager.BaseGUI {
     private Shop currentShop;
 
     // 界面布局
-    private static final int[] BORDER_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53};
+    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53};
     private static final int NAME_SLOT = 20;
     private static final int DESC_SLOT = 22;
     private static final int ITEMS_SLOT = 24;
     private static final int SELL_HAND_SLOT = 29;    // 上架手持物品
     private static final int SELL_INVENTORY_SLOT = 33; // 上架背包物品
-    private static final int BACK_SLOT = 49;
+    private static final int BACK_SLOT = 0;
 
     public ShopEditGui(JebeMarket plugin,
                        ShopManager shopManager,
