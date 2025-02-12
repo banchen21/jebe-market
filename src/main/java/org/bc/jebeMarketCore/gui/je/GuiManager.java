@@ -44,7 +44,7 @@ public class GuiManager implements Listener {
                                 PlayerHeadManager headManager,
                                 PlayerInputHandler inputHandler) {
         // 使用工厂方法创建实例
-        guiRegistry.put(GUIType.MAIN, () -> new ShopMainGUI(plugin, this, shopManager));
+        guiRegistry.put(GUIType.MAIN, () -> new ShopMainGUI(plugin, this, shopManager,inputHandler));
         guiRegistry.put(GUIType.PLAYER_SHOP, () -> new ShopBrowseGui(
                 plugin, shopManager, headManager, inputHandler,
                 this,

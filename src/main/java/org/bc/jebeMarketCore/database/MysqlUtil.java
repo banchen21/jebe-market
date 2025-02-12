@@ -89,4 +89,9 @@ public class MysqlUtil implements ShopRepository {
     public List<Shop> getAllShops() {
         return List.of();
     }
+
+    @Override
+    public boolean updateItemStack(ShopItem shopItem) {
+        return false;
+    }
 }

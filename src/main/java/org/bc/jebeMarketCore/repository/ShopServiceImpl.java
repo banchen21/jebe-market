@@ -1,5 +1,6 @@
 package org.bc.jebeMarketCore.repository;
 
+import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
 import org.bukkit.inventory.ItemStack;
@@ -10,9 +11,11 @@ import java.util.UUID;
 public class ShopServiceImpl implements ShopRepository {
 
     private final ShopRepository shopRepository;
+    private final JebeMarket plugin;
 
-    public ShopServiceImpl(ShopRepository shopRepository) {
+    public ShopServiceImpl(ShopRepository shopRepository, JebeMarket plugin) {
         this.shopRepository = shopRepository;
+        this.plugin = plugin;
     }
 
     @Override
@@ -83,6 +86,11 @@ public class ShopServiceImpl implements ShopRepository {
     @Override
     public List<Shop> getAllShops() {
         return shopRepository.getAllShops();
+    }
+
+    @Override
+    public boolean updateItemStack(ShopItem shopItem) {
+        return shopRepository.updateItemStack(shopItem);
     }
 }
 

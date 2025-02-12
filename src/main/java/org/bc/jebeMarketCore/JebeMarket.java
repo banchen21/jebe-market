@@ -1,20 +1,23 @@
 package org.bc.jebeMarketCore;
 
+import lombok.Getter;
+import net.milkbowl.vault.economy.Economy;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.command.ShopCommand;
 import org.bc.jebeMarketCore.command.ShopTabCommand;
 import org.bc.jebeMarketCore.config.Configuration;
+import org.bc.jebeMarketCore.database.MysqlUtil;
+import org.bc.jebeMarketCore.database.ShopSqlite3Util;
 import org.bc.jebeMarketCore.gui.je.GuiManager;
 import org.bc.jebeMarketCore.listeners.PlayerListener;
 import org.bc.jebeMarketCore.repository.ShopServiceImpl;
 import org.bc.jebeMarketCore.service.ShopManagerImpl;
-import org.bc.jebeMarketCore.database.MysqlUtil;
-import org.bc.jebeMarketCore.database.ShopSqlite3Util;
 import org.bc.jebeMarketCore.utils.PlayerHeadManager;
 import org.bc.jebeMarketCore.utils.PlayerInputHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -33,12 +36,26 @@ public final class JebeMarket extends JavaPlugin {
     PlayerInputHandler inputHandler;
     PlayerHeadManager playerHeadManager;
     GuiManager guiManager;
-
+    @Getter
+    Economy labor_econ;
     @Override
     public void onEnable() {
         // 初始化配置
         config = new Configuration(this);
         i18nConfig = config.getI18nConfig();
+
+        if (Bukkit.getPluginManager().getPlugin("Vault") != null) {
+            RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+            if (rsp != null) {
+                labor_econ = rsp.getProvider();
+                getLogger().info("Economy provider successfully loaded.");
+            } else {
+                getLogger().warning("Vault does not provide Economy service.");
+            }
+        } else {
+            getServer().getPluginManager().disablePlugin(this);
+        }
+
         checkFilesystem();
 
         // 初始化数据存储（示例使用内存存储）
@@ -46,17 +63,17 @@ public final class JebeMarket extends JavaPlugin {
         switch (config.getStorageType()) {
             case sqlite -> {
                 try {
-                    shopService = new ShopServiceImpl(new ShopSqlite3Util(this));
+                    shopService = new ShopServiceImpl(new ShopSqlite3Util(this), this);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
             }
             case mysql -> {
-                shopService = new ShopServiceImpl(new MysqlUtil(this));
+                shopService = new ShopServiceImpl(new MysqlUtil(this), this);
             }
         }
 
-        shopManager = new ShopManagerImpl(shopService);
+        shopManager = new ShopManagerImpl(shopService, this);
         inputHandler = new PlayerInputHandler(this);
 
         playerHeadManager = new PlayerHeadManager(this);
@@ -92,4 +109,5 @@ public final class JebeMarket extends JavaPlugin {
     public void onDisable() {
 
     }
+
 }

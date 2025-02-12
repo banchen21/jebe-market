@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Configuration {
 
@@ -60,5 +61,17 @@ public class Configuration {
 
     public String getString(String s) {
         return config.getString(s);
+    }
+
+    public int getInt(String s) {
+        return config.getInt(s);
+    }
+
+    public double getDouble(String s) {
+        return config.getDouble(s);
+    }
+
+    public List<String> getStringList(String s) {
+        return config.getStringList(s);
     }
 }

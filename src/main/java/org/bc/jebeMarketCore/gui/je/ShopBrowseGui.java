@@ -1,5 +1,6 @@
 package org.bc.jebeMarketCore.gui.je;
 
+import lombok.extern.slf4j.Slf4j;
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.model.Shop;
@@ -22,27 +23,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * 通用商铺浏览界面（支持全服/个人模式）
- */
+@Slf4j
 public class ShopBrowseGui extends GuiManager.BaseGUI {
 
-    @Override
-    public @NotNull Inventory getInventory() {
-        return inventory;
-    }
-
     public enum DisplayMode {
-        ALL_SHOPS,   // 全服商铺模式
-        MY_SHOPS     // 个人商铺模式
+        ALL_SHOPS,
+        MY_SHOPS
     }
 
-    // 布局常量
-    private static final int[] BORDER_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53};
-    private static final int ITEMS_PER_PAGE = 45;
-    private static final int PREV_PAGE_SLOT = 45;
-    private static final int NEXT_PAGE_SLOT = 53;
+    // 更新布局常量与参考页面一致
+    private static final int BACK_SLOT = 0;
+    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52};
+    private static final int PREV_PAGE_SLOT = 48;
+    private static final int NEXT_PAGE_SLOT = 50;
     private static final int PAGE_INFO_SLOT = 49;
+    private static final int ITEMS_PER_PAGE = 36; // 9-44共36个槽位
     private static final NamespacedKey SHOP_UUID_KEY = new NamespacedKey("jebemarket", "shop_uuid");
 
     // 依赖服务
@@ -53,7 +48,7 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
     private final DisplayMode displayMode;
 
     // 状态管理
-    private int currentPage = 1;
+    private int currentPage = 0;
     private UUID currentOwner;
 
     public ShopBrowseGui(JebeMarket plugin,
@@ -78,60 +73,81 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
     }
 
     private void initializeLayout() {
+        // 填充边框
         ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE)
                 .name(" ")
                 .build();
         Arrays.stream(BORDER_SLOTS).forEach(slot -> inventory.setItem(slot, border));
+
+        // 返回按钮
+        inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER)
+                .name("§c返回")
+                .build());
+
         refreshPage();
     }
 
     private void refreshPage() {
         clearItems();
-        updatePagination();
         loadShops();
+        updateNavigationButtons();
     }
 
     private void clearItems() {
-        Arrays.stream(new int[]{9, 44}).forEach(slot -> inventory.setItem(slot, null));
+        for (int i = 9; i < 45; i++) {
+            inventory.setItem(i, null);
+        }
     }
 
     private void loadShops() {
         List<Shop> shops = getCurrentShops();
-        int slot = 9;
-        for (Shop shop : shops) {
-            if (slot > 44) break;
-            inventory.setItem(slot++, createShopItem(shop));
+        int startIndex = currentPage * ITEMS_PER_PAGE;
+        int endIndex = Math.min(startIndex + ITEMS_PER_PAGE, shops.size());
+
+        for (int i = startIndex; i < endIndex; i++) {
+            int slot = 9 + (i - startIndex);
+            inventory.setItem(slot, createShopItem(shops.get(i)));
         }
     }
 
     private List<Shop> getCurrentShops() {
-        List<Shop> shops = displayMode == DisplayMode.ALL_SHOPS ?
+        return displayMode == DisplayMode.ALL_SHOPS ?
                 shopManager.getShops() :
                 shopManager.getShopsByOwner(currentOwner);
-
-        int totalPages = getTotalPages(shops.size());
-        currentPage = Math.max(1, Math.min(currentPage, totalPages));
-
-        int start = (currentPage - 1) * ITEMS_PER_PAGE;
-        int end = Math.min(start + ITEMS_PER_PAGE, shops.size());
-        return shops.subList(start, end);
     }
 
-    private void updatePagination() {
+    private void updateNavigationButtons() {
         int totalShops = displayMode == DisplayMode.ALL_SHOPS ?
                 shopManager.getShops().size() :
                 shopManager.getShopsByOwner(currentOwner).size();
-
-        int totalPages = getTotalPages(totalShops);
-
-        // 更新分页按钮
-        inventory.setItem(PREV_PAGE_SLOT, currentPage > 1 ?
-                createNavigationButton("§a上一页") : null);
-        inventory.setItem(NEXT_PAGE_SLOT, currentPage < totalPages ?
-                createNavigationButton("§a下一页") : null);
+        int totalPages = (int) Math.ceil((double) totalShops / ITEMS_PER_PAGE);
 
         // 页面信息
-        inventory.setItem(PAGE_INFO_SLOT, createPageInfoItem(totalShops, totalPages));
+        inventory.setItem(PAGE_INFO_SLOT, ItemBuilder.of(Material.PAPER)
+                .name("§f第 " + (currentPage + 1) + "/" + (totalPages == 0 ? 1 : totalPages) + " 页")
+                .build());
+
+        // 上一页按钮
+        if (currentPage > 0) {
+            inventory.setItem(PREV_PAGE_SLOT, ItemBuilder.of(Material.ARROW)
+                    .name("§a上一页")
+                    .build());
+        } else {
+            inventory.setItem(PREV_PAGE_SLOT, ItemBuilder.of(Material.RED_STAINED_GLASS_PANE)
+                    .name("§c已是第一页")
+                    .build());
+        }
+
+        // 下一页按钮
+        if (currentPage < totalPages - 1) {
+            inventory.setItem(NEXT_PAGE_SLOT, ItemBuilder.of(Material.ARROW)
+                    .name("§a下一页")
+                    .build());
+        } else {
+            inventory.setItem(NEXT_PAGE_SLOT, ItemBuilder.of(Material.RED_STAINED_GLASS_PANE)
+                    .name("§c已是最后一页")
+                    .build());
+        }
     }
 
     private ItemStack createShopItem(Shop shop) {
@@ -153,6 +169,37 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
         return head;
     }
 
+    @Override
+    protected void handleClick(InventoryClickEvent event) {
+        super.handleClick(event);
+        Player player = (Player) event.getWhoClicked();
+        int slot = event.getRawSlot();
+
+        if (slot == BACK_SLOT) {
+            returnToPrevious(player);
+            return;
+        }
+
+        if (slot == PREV_PAGE_SLOT && currentPage > 0) {
+            currentPage--;
+            refreshPage();
+            return;
+        }
+
+        if (slot == NEXT_PAGE_SLOT) {
+            int totalShops = getCurrentShops().size();
+            int totalPages = (int) Math.ceil((double) totalShops / ITEMS_PER_PAGE);
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                refreshPage();
+            }
+            return;
+        }
+
+        if (slot >= 9 && slot <= 44) {
+            handleShopClick(event.getCurrentItem(), player);
+        }
+    }
 
     private void handleShopClick(ItemStack item, Player player) {
         if (item == null || !item.hasItemMeta()) return;
@@ -163,133 +210,37 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
             Shop shop = shopManager.getShop(shopId);
 
             if (displayMode == DisplayMode.MY_SHOPS) {
-                handleMyShopClick(shop, player);
+                guiManager.openGuiWithContext(player, GUIType.SHOP_EDIT, shop);
             } else {
-                handlePublicShopClick(shop, player);
+                guiManager.openGuiWithContext(player, GUIType.SHOP_DETAILS, shop);
             }
         }
     }
 
-    private void handleMyShopClick(Shop shop, Player player) {
-        guiManager.openGuiWithContext(player,
-                GUIType.SHOP_EDIT,
-                shop
-        );
-
-    }
-
-    private void handlePublicShopClick(Shop shop, Player player) {
-        guiManager.openGuiWithContext(player,
-                GUIType.SHOP_DETAILS,
-                shop
-        );
-    }
-
-    private void handleMyShopOpening(Player player) {
-        List<Shop> shops = shopManager.getShopsByOwner(player.getUniqueId());
-        if (shops.isEmpty()) {
-            player.closeInventory();
-            inputHandler.requestInput(player, "§a请输入新商铺名称（输入cancel取消）",
-                    input -> {
-                        if (input.equalsIgnoreCase("cancel")) {
-                            guiManager.openGui(player, GUIType.MAIN);
-                            return;
-                        }
-
-                        try {
-                            Shop newShop = shopManager.createShop(input, player.getUniqueId());
-                            player.sendMessage("§a商铺创建成功！");
-                            // 创建成功后重新打开界面
-                            currentOwner = player.getUniqueId();
-                            currentPage = 1;
-                            refreshPage();
-                            player.openInventory(inventory);
-                        } catch (Exception e) {
-                            player.sendMessage("§c创建失败: " + e.getMessage());
-                            guiManager.openGui(player, GUIType.MAIN);
-                        }
-                    },
-                    30
-            );
-        } else {
-            // 重要修复：已有商铺时执行打开操作
-            currentOwner = player.getUniqueId();
-            currentPage = 1;
-            refreshPage();
-            player.openInventory(inventory);
-        }
-    }
-
-    // 辅助方法
-    private ItemStack createPageInfoItem(int totalShops, int totalPages) {
-        return ItemBuilder.of(Material.BOOK)
-                .name("§6页面信息")
-                .lore(
-                        "§7当前页数: " + currentPage + "/" + totalPages,
-                        "§7总商店数: " + totalShops,
-                        "§7每页显示: " + ITEMS_PER_PAGE + " 个商店"
-                )
-                .build();
-    }
-
-    private ItemStack createNavigationButton(String name) {
-        return ItemBuilder.of(Material.ARROW)
-                .name(name)
-                .build();
-    }
-
-    private int getTotalPages(int totalItems) {
-        return (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
+    @Override
+    public void open(Player player) {
+        player.openInventory(inventory);
     }
 
     @Override
     public void openWithContext(Player player, Object context) {
         if (displayMode == DisplayMode.MY_SHOPS) {
             this.currentOwner = player.getUniqueId();
-        }
-        // 调用父类方法确保基础逻辑执行
-        super.openWithContext(player, context);
-        // 强制刷新数据
-        currentPage = 1;
-        refreshPage();
-    }
-
-
-    @Override
-    public void open(Player player) {
-        if (displayMode == DisplayMode.MY_SHOPS) {
-            handleMyShopOpening(player);
+            refreshPage();
+            player.openInventory(inventory);
         } else {
-            currentPage = 1;
-            currentOwner = null;
+            super.openWithContext(player, context);
             refreshPage();
             player.openInventory(inventory);
         }
     }
 
-
-    @Override
-    protected void handleClick(InventoryClickEvent event) {
-        super.handleClick(event);
-        Player player = (Player) event.getWhoClicked();
-        int slot = event.getRawSlot();
-
-        switch (slot) {
-            case PREV_PAGE_SLOT:
-                currentPage--;
-                refreshPage();
-                break;
-
-            case NEXT_PAGE_SLOT:
-                currentPage++;
-                refreshPage();
-                break;
-            default:
-                if (slot >= 9 && slot <= 44) {
-                    handleShopClick(event.getCurrentItem(), player);
-                }
-        }
+    private void returnToPrevious(Player player) {
+        guiManager.openGui(player, GUIType.MAIN);
     }
 
-
+    @Override
+    public @NotNull Inventory getInventory() {
+        return inventory;
+    }
 }

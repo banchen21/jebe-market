@@ -2,7 +2,9 @@ package org.bc.jebeMarketCore.gui.je;
 
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
+import org.bc.jebeMarketCore.model.Shop;
 import org.bc.jebeMarketCore.utils.ItemBuilder;
+import org.bc.jebeMarketCore.utils.PlayerInputHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,6 +14,10 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.List;
+
+import static org.bc.jebeMarketCore.utils.MessageUtils.color;
+
 
 /**
  * 优化后的商店主界面GUI
@@ -29,13 +35,15 @@ public class ShopMainGUI extends GuiManager.BaseGUI {
 
     private final GuiManager guiManager;
     private final ShopManager shopManager;
+    private final PlayerInputHandler inputHandler;
     private final @NotNull Inventory inventory;
 
-    public ShopMainGUI(JebeMarket plugin, GuiManager guiManager, ShopManager shopManager) {
+    public ShopMainGUI(JebeMarket plugin, GuiManager guiManager, ShopManager shopManager, PlayerInputHandler inputHandler) {
         super(plugin);
         this.guiManager = guiManager;
         this.shopManager = shopManager;
-        this.inventory = Bukkit.createInventory(this, 54, "§8§市集中心");
+        this.inputHandler = inputHandler;
+        this.inventory = Bukkit.createInventory(this, 54, "§8§l市集中心");
         initializeItems();
     }
 
@@ -116,11 +124,31 @@ public class ShopMainGUI extends GuiManager.BaseGUI {
 
         switch (slot) {
             case BROWSE_SHOP_SLOT: // 市集商铺
-                guiManager.openGuiWithContext(player, GUIType.PLAYER_SHOP, true);
+                guiManager.openGuiWithContext(player, GUIType.PLAYER_SHOP, ShopBrowseGui.DisplayMode.ALL_SHOPS);
                 break;
 
             case MY_SHOP_SLOT: // 我的商铺
-                guiManager.openGuiWithContext(player, GUIType.MY_SHOP,true);
+                List<Shop> shopList = shopManager.getShopsByOwner(player.getUniqueId());
+                if (shopList.isEmpty()) {
+                    inputHandler.requestInput(player, "你还没有一个商铺，请输入新名称（2-16字符）以创建你的第一个商铺",
+                            input -> {
+                                if (input.length() < 2 || input.length() > 16) {
+                                    player.sendMessage("§c名称长度需在2-16字符之间");
+                                    return;
+                                }
+                                Shop shop = shopManager.createShop(input, player.getUniqueId());
+                                if (shop != null) {
+                                    player.sendMessage(color(String.format("&a成功创建商店 %s！UID: %s", input, shop.getUuid())));
+                                } else {
+                                    player.sendMessage(color("&c创建商铺失败，检查名称发现重复"));
+                                }
+                                guiManager.openGuiWithContext(player, GUIType.MY_SHOP, ShopBrowseGui.DisplayMode.MY_SHOPS);
+                            },
+                            30
+                    );
+                } else {
+                    guiManager.openGuiWithContext(player, GUIType.MY_SHOP, ShopBrowseGui.DisplayMode.MY_SHOPS);
+                }
                 break;
 
             case PAWN_SHOP_SLOT: // 典当行

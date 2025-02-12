@@ -89,11 +89,21 @@ public class PlayerInputHandler implements Listener {
             Consumer<String> callback = inputCallbacks.remove(uuid);
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                 try {
+                    if (plugin.getConfig().getBoolean("allow_color_code") && checkColorCode(message)) {
+                        player.sendMessage("§c输入包含颜色代码，请重新输入");
+                        return;
+                    }
                     callback.accept(message);
                 } catch (Exception e) {
                     player.sendMessage("§c处理输入时发生错误: " + e.getMessage());
                 }
             });
         }
+    }
+
+    //    颜色代码检测
+    public static boolean checkColorCode(String text) {
+        String regex = "§[0-9a-fA-Fk-oK-OrR]";
+        return text.matches(regex);
     }
 }

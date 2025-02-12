@@ -2,6 +2,7 @@ package org.bc.jebeMarketCore.api;
 
 import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +41,11 @@ public interface ShopManager {
 
     Shop getShop(UUID uuid);
 
-    boolean setShop(Shop shop);
+    boolean updateShopName(Shop shop);
+
+    boolean updateShopOwner(Shop shop);
+
+    boolean updateShopLore(Shop shop);
 
     /**
      * 删除指定的商店
@@ -58,11 +63,18 @@ public interface ShopManager {
 
     ShopItem addItem(UUID shopUuid, @NotNull ItemStack clone);
 
+    void addHandItem(UUID shopUuid, Player player);
+
+    void addInventoryItem(UUID shopUuid, Player player);
+
     ItemStack removeItem(Shop shop, UUID itemId);
 
     List<ShopItem> getItems(UUID shopUuid);
 
     ShopItem getItem(UUID shopUuid, UUID itemId);
 
-    boolean updateItem(ShopItem shopItem);
+    boolean updatePrice(ShopItem shopItem);
+
+    //    修改物品数量
+    boolean updateItemStack(ShopItem shopItem);
 }

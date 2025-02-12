@@ -41,4 +41,6 @@ public interface ShopRepository {
     boolean updatePrice(ShopItem shopItem);
 
     List<Shop> getAllShops();
+
+    boolean updateItemStack(ShopItem shopItem);
 }

@@ -276,4 +276,19 @@ public class ShopSqlite3Util implements ShopRepository {
     public List<Shop> getAllShops() {
         return jdbi.withExtension(ShopDao.class, ShopDao::getAllShops);
     }
+
+    @Override
+    public boolean updateItemStack(ShopItem shopItem) {
+//        删除旧文件
+        try {
+            Path dir = Paths.get(plugin.getDataFolder().getPath(), "items");
+            Path itempath = dir.resolve(shopItem.getUuid().toString());
+            Files.delete(itempath);
+            saveItemStackFile(shopItem.getItemStack(), shopItem.getUuid());
+            return true;
+
+        } catch (IOException e) {
+            return false;
+        }
+    }
 }

@@ -3,6 +3,7 @@ package org.bc.jebeMarketCore.gui.je;
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.model.Shop;
+import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.utils.ItemBuilder;
 import org.bc.jebeMarketCore.utils.PlayerInputHandler;
 import org.bukkit.Bukkit;
@@ -14,6 +15,9 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+
+import static org.bc.jebeMarketCore.utils.MessageUtils.color;
+
 
 /**
  * 商铺编辑界面
@@ -29,6 +33,8 @@ public class ShopEditGui extends GuiManager.BaseGUI {
     private static final int NAME_SLOT = 20;
     private static final int DESC_SLOT = 22;
     private static final int ITEMS_SLOT = 24;
+    private static final int SELL_HAND_SLOT = 29;    // 上架手持物品
+    private static final int SELL_INVENTORY_SLOT = 33; // 上架背包物品
     private static final int BACK_SLOT = 49;
 
     public ShopEditGui(JebeMarket plugin,
@@ -69,7 +75,8 @@ public class ShopEditGui extends GuiManager.BaseGUI {
         // 介绍按钮
         inventory.setItem(DESC_SLOT, ItemBuilder.of(Material.WRITABLE_BOOK)
                 .name("§e修改商铺介绍")
-                .lore("§7点击编辑详细描述")
+                .lore("§7当前详细描述: " + (currentShop != null ? currentShop.getLore() : "未知"))
+                .glow(true)
                 .build());
 
         // 商品管理按钮
@@ -77,6 +84,21 @@ public class ShopEditGui extends GuiManager.BaseGUI {
                 .name("§e管理商品价格")
                 .lore("§7点击管理商品库存和定价")
                 .build());
+
+        // 上架手持物品按钮
+        inventory.setItem(SELL_HAND_SLOT, ItemBuilder.of(Material.DIAMOND)
+                .name("§6上架手持物品")
+                .lore("§7将手中物品快速上架",
+                        "§eShift+点击设置价格")
+                .build());
+
+        // 上架背包物品按钮
+        inventory.setItem(SELL_INVENTORY_SLOT, ItemBuilder.of(Material.CHEST)
+                .name("§6批量上架物品")
+                .lore("§7从背包选择多个物品上架",
+                        "§e点击打开选择界面")
+                .build());
+
     }
 
     @Override
@@ -115,21 +137,40 @@ public class ShopEditGui extends GuiManager.BaseGUI {
             case BACK_SLOT:
                 returnToPrevious(player);
                 break;
+
+            case SELL_HAND_SLOT:
+                handleSellHandItem(player);
+                break;
+
+            case SELL_INVENTORY_SLOT:
+                openBulkSellInterface(player);
+                break;
         }
+    }
+
+    /**
+     * 上架手持物品
+     *
+     * @param player Player
+     */
+    private void handleSellHandItem(Player player) {
+        shopManager.addHandItem(currentShop.getUuid(), player);
+    }
+
+    private void openBulkSellInterface(Player player) {
+        shopManager.addInventoryItem(currentShop.getUuid(), player);
     }
 
     private void handleNameEdit(Player player) {
         player.closeInventory();
-        inputHandler.requestInput(player, "你还没有一个商铺，请输入新名称（2-16字符）以创建你的第一个商铺",
+        inputHandler.requestInput(player, "请输入新名称（2-16字符之间）",
                 input -> {
                     if (input.length() < 2 || input.length() > 16) {
                         player.sendMessage("§c名称长度需在2-16字符之间");
                         return;
                     }
-
                     currentShop.setName(input);
-                    shopManager.setShop(currentShop);
-                    updateInfoDisplay();
+                    shopManager.updateShopName(currentShop);
                     player.sendMessage("§a名称已更新！");
                 },
                 30
@@ -138,14 +179,14 @@ public class ShopEditGui extends GuiManager.BaseGUI {
 
     private void handleDescEdit(Player player) {
         player.closeInventory();
-        inputHandler.requestInput(player, "请输入新介绍（支持多行，最多256字符）",
+        inputHandler.requestInput(player, "请输入新介绍（支持多行，最多256字符以 | 符号换行）",
                 input -> {
                     if (input.length() > 256) {
                         player.sendMessage("§c介绍过长，最多256字符");
                         return;
                     }
                     currentShop.setLore(input);
-                    shopManager.setShop(currentShop);
+                    shopManager.updateShopLore(currentShop);
                     player.sendMessage("§a介绍已更新！");
                 },
                 60

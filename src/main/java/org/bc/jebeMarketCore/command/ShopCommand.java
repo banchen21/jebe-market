@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.bc.jebeMarketCore.utils.MessageUtils.color;
+
 public class ShopCommand implements CommandExecutor {
     private final JebeMarket plugin;
     private final ShopManager shopManager;
@@ -102,9 +104,6 @@ public class ShopCommand implements CommandExecutor {
     }
 
     private void handleCreate(CommandSender sender, String[] args) {
-        if (!checkPermission(sender, "jebemarket.create")) {
-            return;
-        }
 
         // 检查是否是玩家
         if (!(sender instanceof Player player)) {
@@ -134,7 +133,6 @@ public class ShopCommand implements CommandExecutor {
     }
 
     private void handleEdit(CommandSender sender, String[] args) {
-        if (!checkPermission(sender, "jebemarket.edit")) return;
         if (args.length < 3) {
             sender.sendMessage(color("&c用法: /shop edit <name/lore/owner/type> <Name> [参数]"));
             return;
@@ -184,7 +182,7 @@ public class ShopCommand implements CommandExecutor {
             return;
         }
         shop.setName(newName);
-        if (shopManager.setShop(shop)) {
+        if (shopManager.updateShopName(shop)) {
             sender.sendMessage(color("&a商铺名称已更新"));
         } else {
             sender.sendMessage(color("&c名称更新失败，可能重复"));
@@ -202,7 +200,7 @@ public class ShopCommand implements CommandExecutor {
             return;
         }
         shop.setLore(lore);
-        shopManager.setShop(shop);
+        shopManager.updateShopLore(shop);
         sender.sendMessage(color("&a商铺描述已更新"));
     }
 
@@ -219,12 +217,11 @@ public class ShopCommand implements CommandExecutor {
         }
 
         shop.setOwner(newOwner.getUniqueId());
-        shopManager.setShop(shop);
+        shopManager.updateShopOwner(shop);
         sender.sendMessage(color(String.format("&a已将商铺转让给 %s", newOwner.getName())));
     }
 
     private void handleDelete(CommandSender sender, String[] args) {
-        if (!checkPermission(sender, "jebemarket.delete")) return;
         if (args.length < 3 || !args[2].equalsIgnoreCase("yes")) {
             sender.sendMessage(color("&c请在命令末尾添加 yes 确认删除\n例: /shop delete <Name> yes"));
             return;
@@ -305,7 +302,7 @@ public class ShopCommand implements CommandExecutor {
             price = Math.round(price * 100) / 100.0;
             shopItem.setPrice(price);
             player.sendMessage(color("&a单价已更新: " + price));
-            if (shopManager.updateItem(shopItem)) {
+            if (shopManager.updatePrice(shopItem)) {
                 player.sendMessage(color("&a更新成功"));
             } else {
                 player.sendMessage(color("&c更新失败，请重试"));
@@ -365,28 +362,11 @@ public class ShopCommand implements CommandExecutor {
 
             switch (args[2].toLowerCase()) {
                 case "hand":
-                    ItemStack handItem = player.getInventory().getItemInMainHand();
-                    if (handItem.getAmount() == 0) {
-                        player.sendMessage(color("&c请手持要上架的商品"));
-                        return;
-                    }
-
-                    ShopItem shopItem = shopManager.addItem(shop.getUuid(), handItem.clone());
-                    handItem.setAmount(0);
-                    player.sendMessage(color(String.format("&a成功上架商品 %s", shopItem.getUuid().toString())));
-
+                    shopManager.addHandItem(shop.getUuid(), player);
                     break;
                 case "inventory":
-                    int count = 0;
-                    for (ItemStack stack : player.getInventory().getContents()) {
-                        if (stack != null && !stack.getType().isAir()) {
-                            ShopItem shopItem1 = shopManager.addItem(shop.getUuid(), stack.clone());
-                            stack.setAmount(0);
-                            player.sendMessage(color(String.format("&a成功上架 %s", shopItem1.getUuid().toString())));
-                            count++;
-                        }
-                    }
-                    player.sendMessage(color(String.format("&a成功上架 %d 种物品", count)));
+                    shopManager.addInventoryItem(shop.getUuid(), player);
+
                     break;
                 default:
                     player.sendMessage(color("&c无效来源，可用 主手持/背包"));
@@ -419,19 +399,19 @@ public class ShopCommand implements CommandExecutor {
                 List<ShopItem> shopItemList = shopManager.getItems(shop.getUuid());
                 shopItemList.forEach(item -> {
                     ItemStack itemStack = shopManager.removeItem(shop, item.getUuid());
-                    givePlayerItemStack(player, shop, itemStack);
+                    givePlayerItemStack(player, itemStack);
                 });
             } else {
                 UUID itemId = UUID.fromString(args[3]);
                 ItemStack itemStack = shopManager.removeItem(shop, itemId);
-                givePlayerItemStack(player, shop, itemStack);
+                givePlayerItemStack(player, itemStack);
             }
         } catch (IllegalArgumentException e) {
             player.sendMessage(color("&c无效的ID格式"));
         }
     }
 
-    private void givePlayerItemStack(Player player, Shop shop, ItemStack itemStack) {
+    private void givePlayerItemStack(Player player, ItemStack itemStack) {
         if (itemStack != null) {
             if (player.getInventory().firstEmpty() == -1) {
                 player.getWorld().dropItem(player.getLocation(), itemStack);
@@ -476,14 +456,6 @@ public class ShopCommand implements CommandExecutor {
     }
 
     //    TODO 权限验证
-    private boolean checkPermission(CommandSender sender, String permission) {
-        if (!sender.hasPermission(permission) && !sender.hasPermission("jebemarket.admin")) {
-            sender.sendMessage(color("&c你没有执行此操作的权限"));
-            return false;
-        }
-        return true;
-    }
-
     private boolean isOwnerOrAdmin(CommandSender sender, Shop shop) {
         if (sender instanceof Player) {
             return shop.getOwner().equals(((Player) sender).getUniqueId()) || sender.hasPermission("jebemarket.admin");
@@ -491,11 +463,5 @@ public class ShopCommand implements CommandExecutor {
         return false;
     }
 
-    private String color(String text) {
-        return MessageUtils.legacyColor(text);
-    }
 
-    private String color(String format, Object... args) {
-        return color(String.format(format, args));
-    }
 }
