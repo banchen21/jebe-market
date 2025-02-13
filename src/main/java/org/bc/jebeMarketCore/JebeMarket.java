@@ -113,7 +113,7 @@ public final class JebeMarket extends JavaPlugin {
         getLogger().info(i18nConfig.getString("plugin.disabled"));
     }
 
-    public String getString(String key) {
+    public String getI18nString(String key) {
         return i18nConfig.getString(key);
     }
 

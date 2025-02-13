@@ -35,7 +35,7 @@ public class PlayerHeadManager {
         } catch (IOException e) {
             plugin.getLogger().log(
                     Level.SEVERE,
-                    plugin.getString("filesystem.cache.create_failed.ncreate_failed"),
+                    plugin.getI18nString("filesystem.cache.create_failed.ncreate_failed"),
                     e
             );
         }
@@ -47,7 +47,7 @@ public class PlayerHeadManager {
         try {
             Files.deleteIfExists(cacheFile);
         } catch (IOException e) {
-            String message = plugin.getString("filesystem.cache.delete_failed")
+            String message = plugin.getI18nString("filesystem.cache.delete_failed")
                     .replace("%player%", playerId.toString());
             plugin.getLogger().log(Level.WARNING, message, e);
         }
@@ -63,7 +63,7 @@ public class PlayerHeadManager {
             byte[] serialized = ItemStorageUtil.serializeItemStack(playerHead);
             out.writeObject(serialized);
         } catch (IOException e) {
-            String message = plugin.getString("filesystem.cache.save_failed")
+            String message = plugin.getI18nString("filesystem.cache.save_failed")
                     .replace("%player%", playerId.toString());
             plugin.getLogger().log(Level.SEVERE, message, e);
         }
@@ -105,7 +105,7 @@ public class PlayerHeadManager {
             byte[] data = (byte[]) in.readObject();
             return ItemStorageUtil.deserializeItemStack(data);
         } catch (IOException | ClassNotFoundException e) {
-            String message = plugin.getString("filesystem.cache.load_failed")
+            String message = plugin.getI18nString("filesystem.cache.load_failed")
                     .replace("%player%", playerId.toString());
             plugin.getLogger().log(Level.WARNING, message, e);
             return null;
@@ -145,14 +145,14 @@ public class PlayerHeadManager {
                 }
                 // 记录清理结果
                 if (deletedCount > 0) {
-                    String message = plugin.getString("plugin.maintenance.cache_cleanup")
+                    String message = plugin.getI18nString("plugin.maintenance.cache_cleanup")
                             .replace("%count%", String.valueOf(deletedCount));
                     plugin.getLogger().info(message);
                 }
             } catch (IOException e) {
                 plugin.getLogger().log(
                         Level.WARNING,
-                        plugin.getString("filesystem.cache.cleanup_failed"),
+                        plugin.getI18nString("filesystem.cache.cleanup_failed"),
                         e
                 );
             }

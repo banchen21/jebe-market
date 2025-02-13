@@ -74,19 +74,19 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
         String key = displayMode == DisplayMode.ALL_SHOPS ?
                 "ui.browse.title.all_shops" :
                 "ui.browse.title.my_shops";
-        return color(plugin.getString(key));
+        return color(plugin.getI18nString(key));
     }
 
     private void initializeLayout() {
         // 填充边框
         ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE)
-                .name(color(plugin.getString("ui.common.border_item")))
+                .name(color(plugin.getI18nString("ui.browse.common.border_item")))
                 .build();
         Arrays.stream(BORDER_SLOTS).forEach(slot -> inventory.setItem(slot, border));
 
         // 返回按钮
         inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER)
-                .name(color(plugin.getString("commands.gui.back_button")))
+                .name(color(plugin.getI18nString("ui.back_button")))
                 .build());
         refreshPage();
     }
@@ -127,7 +127,7 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
         int totalPages = (int) Math.ceil((double) totalShops / ITEMS_PER_PAGE);
 
         // 修复：添加color处理
-        String pageInfo = color(plugin.getString("ui.navigation.page_info")
+        String pageInfo = color(plugin.getI18nString("ui.browse.navigation.page_info")
                 .replace("%current%", String.valueOf(currentPage + 1))
                 .replace("%total%", String.valueOf(totalPages == 0 ? 1 : totalPages)));
         inventory.setItem(PAGE_INFO_SLOT, ItemBuilder.of(Material.PAPER)
@@ -138,22 +138,22 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
         // 修复：添加color处理
         if (currentPage > 0) {
             inventory.setItem(PREV_PAGE_SLOT, ItemBuilder.of(Material.ARROW)
-                    .name(color(plugin.getString("ui.navigation.previous_page")))
+                    .name(color(plugin.getI18nString("ui.browse.navigation.previous_page")))
                     .build());
         } else {
             inventory.setItem(PREV_PAGE_SLOT, ItemBuilder.of(Material.RED_STAINED_GLASS_PANE)
-                    .name(color(plugin.getString("ui.navigation.no_previous_page")))
+                    .name(color(plugin.getI18nString("ui.browse.navigation.no_previous_page")))
                     .build());
         }
 
         // 修复：添加color处理
         if (currentPage < totalPages - 1) {
             inventory.setItem(NEXT_PAGE_SLOT, ItemBuilder.of(Material.ARROW)
-                    .name(color(plugin.getString("ui.navigation.next_page")))
+                    .name(color(plugin.getI18nString("ui.browse.navigation.next_page")))
                     .build());
         } else {
             inventory.setItem(NEXT_PAGE_SLOT, ItemBuilder.of(Material.RED_STAINED_GLASS_PANE)
-                    .name(color(plugin.getString("ui.navigation.no_next_page")))
+                    .name(color(plugin.getI18nString("ui.browse.navigation.no_next_page")))
                     .build());
         }
     }
@@ -164,16 +164,16 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
 
         // 名称和描述
         // 修复：添加color处理
-        meta.setDisplayName(color(plugin.getString("ui.shop_item.name")
+        meta.setDisplayName(color(plugin.getI18nString("ui.browse.shop_item.name")
                 .replace("%name%", shop.getName())));
 
-        List<String> lore = plugin.getStringList("ui.shop_item.lore").stream()
+        List<String> lore = plugin.getStringList("ui.browse.shop_item.lore").stream()
                 .map(line -> {
                     String replaced = line.replace("%count%",
                             String.valueOf(shopManager.getItemCount(shop.getUuid())));
                     return color(displayMode == DisplayMode.ALL_SHOPS ?  // 修复：添加color处理
-                            replaced.replace("%action%", plugin.getString("ui.shop_item.view_action")) :
-                            replaced.replace("%action%", plugin.getString("ui.shop_item.manage_action")));
+                            replaced.replace("%action%", plugin.getI18nString("ui.browse.shop_item.view_action")) :
+                            replaced.replace("%action%", plugin.getI18nString("ui.browse.shop_item.manage_action")));
                 })
                 .collect(Collectors.toList());
         meta.setLore(lore);

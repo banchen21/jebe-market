@@ -4,7 +4,6 @@ import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.model.Shop;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,9 +40,9 @@ public interface ShopManager {
 
     Shop getShop(UUID uuid);
 
-    boolean updateShopName(Shop shop);
+    boolean updateShopName(Shop shop,String newName,Player player);
 
-    boolean updateShopOwner(Shop shop);
+    boolean updateShopOwner(Shop shop,Player newOwner);
 
     boolean updateShopLore(Shop shop);
 
@@ -51,19 +50,16 @@ public interface ShopManager {
      * 删除指定的商店
      *
      * @param shopUuid 商店的唯一ID
-     * @param b        可能用于指定是否进行某种额外操作的标志位
      * @return 如果删除成功返回true，否则返回false
      */
-    boolean deleteShop(UUID shopUuid, boolean b);
+    boolean deleteShop(UUID shopUuid);
 
 
     List<Shop> getShops();
 
     int getItemCount(UUID shopUuid);
 
-    ShopItem addItem(UUID shopUuid, @NotNull ItemStack clone);
-
-    void addHandItem(UUID shopUuid, Player player);
+    boolean addHandItem(ShopItem shopIte, Player player);
 
     void addInventoryItem(UUID shopUuid, Player player);
 
@@ -73,7 +69,7 @@ public interface ShopManager {
 
     ShopItem getItem(UUID shopUuid, UUID itemId);
 
-    boolean updatePrice(ShopItem shopItem);
+    boolean updatePrice(ShopItem shopItem,Player player);
 
     //    修改物品数量
     boolean updateItemStack(ShopItem shopItem);

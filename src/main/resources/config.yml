@@ -17,8 +17,30 @@ storage:
 
 settings:
   shop:
-    min_name_length: 2
-    max_name_length: 16
+    create:
+      cost: 1000.00
+      min_name_length: 2
+      max_name_length: 16
+      create_limit: 6
+      filter:
+        banned_words: # 违禁词列表
+          - "admin"
+          - "op"
+          - "staff"
+    edit:
+      name:
+        min_length: 2
+        max_length: 16
+        cost: 500
+      lore:
+        max_length: 256
+      owner:
+        cost: 20
+
+  item:
+    max_price: 1000000
+    up:
+      cost: 100.00
 
 interaction:
   # 输入超时时间（秒）
@@ -33,13 +55,6 @@ stall_mode:
   # 摆摊时的费用（每次摆摊需要支付的金额）
   cost: 50
 
-# 禁止使用的商品名称关键词
-filter:
-  banned_words: # 违禁词列表
-    - "admin"
-    - "op"
-    - "staff"
-
 #  区域限制(TODO)
 restrictions:
   # 禁止创建商铺的世界列表
@@ -47,10 +62,7 @@ restrictions:
   # 每个区块最大商铺数
   chunk_max_shops: 5
 
-# 创建商铺需要多少余额
-shop_create_cost: 100
-# 创建商铺上限
-shop_create_limit: 10
+
 
 # 续费商铺每日费用(TODO)
 shop_rent_daily: 10

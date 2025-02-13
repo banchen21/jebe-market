@@ -33,34 +33,25 @@ database:
   connection_failed: '&c数据库连接失败，请检查配置'
   sql_error: '&c数据库操作异常'
 
-# 系统设置
-settings:
-  shop:
-    max_name_length: 16
-    min_name_length: 2
-    max_price: 1000000
-    max_lore_length: 256
-    max_shops: 5
-    create_cost: 1000.0
-    rename_cost: 500.0
-    transfer_cost: 2000.0
-    desc_cost: 300.0
-    item_limit: 50
-    item_list_cost: 100.0
-
 # 命令相关
 commands:
-  gui:
-    back_button: '&c返回'
-
-  open:
-    usage: '&c用法: /shop open <shop>'
+  # 帮助命令
+  help:
+    header: '&6=== 星际市集帮助 ==='
+    entries:
+      - '&e/shop create <名称> &7- 创建新商铺'
+      - '&e/shop edit <属性> <Shop> [参数] &7- 编辑商铺'
+      - '&e/shop delete <Shop> yes &7- 删除商铺'
+      - '&e/shop info <Shop> &7- 查看商铺信息'
+      - '&e/shop item up <方式> <Shop> &7- 上架商品'
+      - '&e/shop item down <Shop> <ID> &7- 下架商品'
+      - '&e/shop list &7- 列出个人所有商铺'
 
   # 通用错误
   errors:
+    player_only: '&c只有玩家可以执行此操作'
     unknown_error: '&c未知错误'
     unknown_command: '&c未知命令，使用/shop help 查看帮助'
-    player_only: '&c只有玩家可以执行此操作'
     invalid_shop_name: '&c无效的商铺名'
     shop_not_found: '&c商铺不存在'
     no_permission: '&c你没有权限修改此商铺'
@@ -68,86 +59,55 @@ commands:
 
   # 创建命令
   create:
-    usage: '&c用法: /shop create <shop> <新名称>'
+    usage: '&c用法: /shop create <shop> <名称>'
     input_prompt: '你还没有一个商铺，请输入新名称（2-16字符）以创建你的第一个商铺'
     errors:
-      name_length: '&c新名称长度需在2-16字符之间'
+      name_length: '&c新名称长度需在%a-%b字符之间'
       duplicate_name: '&c创建商铺失败，检查名称发现重复'
       invalid_name: '&c商店名称包含违规字符！'
       max_limit: '&c商店创建数量已达上限！'
-    success: '&a成功创建商店 %s！UID: %s'
+    success: '&a成功创建商店 %name | UID: %uid'
     cost_message: '&a商店创建费用: &e%cost%'
-
-
-  # 编辑命令
-  edit:
-    usage: '&c用法: /shop edit <name/lore/owner/type> <Name> [参数]'
-    errors:
-      invalid_type: '&c无效的编辑类型'
-    name:
-      input: '请输入新名称（2-16字符之间）'
-      success: '&a商铺名称已更新'
-      errors:
-        length: '&c名称长度需在%min_name_length%-%max_name_length%字符之间'
-        duplicate: '&c名称更新失败，可能重复'
-
-    lore:
-      input: '请输入新介绍（支持多行，最多256字符以 | 符号换行）'
-      success: '&a商铺描述已更新'
-      success_message: '&a描述修改成功，扣除费用: &e%cost%'
-      errors:
-        length: '&c描述长度不能超过 &e%max% &c字符'
-
-    owner:
-      usage: '&c用法: /shop edit owner <商品名> <玩家> yes'
-      errors:
-        player_offline: '&c目标玩家不在线'
-      success: '&a已将商铺转让给 %s'
-      self: '&c不能转让给自己'
-
-    price:
-      input: '请输入新价格（数字）'
-      success: '&a价格已更新！'
-      invalid: '&c请输入有效的数字'
-      range_error: '&c价格必须大于0且小于%max%'
-      error: '&c更新失败，请重试'
 
   # 删除命令
   delete:
     usage: '&c用法: /shop delete <Name> yes'
     errors:
       not_empty: '&c删除失败，商铺内有商品，请先清空商品'
-    success:
-      shop: '&a商店已删除'
-      item: '&c商品已移除'
+    success: '&a商铺已删除'
 
-  # 商品管理
-  item:
+  # 编辑命令
+  edit:
+    usage: '&c用法: /shop edit <name/lore/owner/type> <Shop> [参数]'
     errors:
-      invalid_operation: '&4用法: /shop item <up/down/info/edit>'
-      invalid_source: '&c无效来源，可用 主手持/背包'
-      invalid_id: '&c无效的ID格式'
-      not_found: '&c商品不存在'
-      missing_id: '&c请输入要下架的商品ID'
-    up:
-      usage: '&c用法: /shop item up <hand/inventory> <Name>'
-    down:
-      usage: '&c用法: /shop item down <Name> <商品ID>'
-      success: '&a商品已下架'
-    edit:
-      usage: '&c/shop item edit <商店> <商品ID> <新价格>'
-      success: '&a单价已更新: %.2f'
-      error: '&c更新失败，请重试'
-    info:
-      empty: '&c该商店没有商品'
+      invalid_type: '&c无效的编辑类型'
+    name:
+      usage: '&c用法: /shop edit name <Name> <新名称>'
+      input: '请输入新名称（%a-%b字符之间）'
+      success: '&a商铺名称已更新'
+      success_message: '&a商铺名称已更新，扣除费用: &e%cost%'
+      errors:
+        length: '&c名称长度需在%min_name_length%-%max_name_length%字符之间'
+        duplicate: '&c名称更新失败'
 
-  # 列表命令
-  list:
-    empty: '&e你还没有创建任何商铺'
-    header: '&6=== 你的商铺列表 ==='
-    entry: '&e%s &7(UID: &f%s&7) &8'
+    lore:
+      usage: '&c用法: /shop edit lore <Name> <文本>'
+      input: '请输入新介绍（支持多行，最多%a字符以 | 符号换行）'
+      success: '&a商铺描述已更新'
+      success_message: '&a描述修改成功，扣除费用: &e%cost%'
+      errors:
+        length: '&c描述长度不能超过 &e%max% &c字符'
+        duplicate: '&c名称更新失败'
 
-  # 信息命令
+    owner:
+      usage: '&c用法: /shop edit owner <商品名> <玩家> yes'
+      success: '&a已将商铺转让给 %s'
+      success_message: '&a已将商铺转让给，扣除费用: &e%cost%'
+      errors:
+        player_offline: '&c目标玩家不在线'
+        self: '&c不能转让给自己'
+        duplicate: '&c转让失败，请检查输入'
+
   info:
     usage: '&c用法: /shop info <Name>'
     header: '&6=== 商铺信息 ==='
@@ -158,38 +118,81 @@ commands:
       lore: '&e描述: &f%s'
       item_count: '&e商品数量: &f%s'
 
-  # 帮助命令
-  help:
-    header: '&6=== 星际市集帮助 ==='
-    entries:
-      - '&e/shop create <名称> &7- 创建新商铺'
-      - '&e/shop edit <属性> <Name> [参数] &7- 编辑商铺'
-      - '&e/shop delete <Name> yes &7- 删除商铺'
-      - '&e/shop info <Name> &7- 查看商铺信息'
-      - '&e/shop item up <方式> <Name> &7- 上架商品'
-      - '&e/shop item down <Name> <ID> &7- 下架商品'
-      - '&e/shop list &7- 列出所有商铺'
+  list:
+    empty: '&e你还没有创建任何商铺'
+    header: '&6=== 你的商铺列表 ==='
+    entry: '&e%name &7(UID: &f%uid&7) &8'
 
-# 物品交互
-items:
-  inventory_full: '&c你的背包已满，商品已生成为掉落物'
-  buttons:
-    main_icon:
-      glow: true
+  open:
+    usage: '&c用法: /shop open <shop>'
+
+  gui:
+    usage: '&c用法: /shop gui <shop>'
+
+  # 商品管理
+  item:
+    usage: '&c用法: /shop item <up/down/info/edit>'
+    errors:
+      invalid_source: '&c无效来源，可用 主手持/背包'
+      invalid_id: '&c无效的ID格式'
+      not_found: '&c商品不存在'
+      missing_id: '&c请输入要下架的商品ID'
+    up:
+      usage: '&c用法: /shop item up <hand/inventory> <Shop> <价格>'
+      hand:
+        errors:
+          hand: '&c你没有手持物品'
+          hand_price: '&e已经设置为系统内部默认值'
+          inventory: '&c背包中没有物品'
+          max_items: '&c该商店商品数量已达上限'
+          max_price: '&c商品单价不能超过%max%'
+          invalid_price: '&c无效价格，请输入数字'
+      success: '&a商品已上架'
+      success_message: '&a成功上架商品，扣除费用: &e%cost%'
+      inventory:
+        usage: '&c用法: /shop item up inventory <Shop>'
+        errors:
+          no_items: '&c背包中没有物品'
+
+    down:
+      usage: '&c用法: /shop item down <Name> <商品UID/all>'
+      success: '&a商品已下架'
+      errors:
+        missing_id: '&c请输入要下架的商品ID'
+        not_found: '&c商品不存在'
+        inventory_full: '&c你的背包已满，商品已生成为掉落物'
+
+    edit:
+      usage: '&c/shop item edit <商店> <商品UID> <新价格>'
+      success: '&a单价已更新: %.2f'
+      error:
+        # &c更新失败，请重试'
+        update_error: '&c更新失败，请重试'
+        # 价格超出最大价格
+        range_error: '&c价格必须大于0且小于%max%'
+
+    info:
+      error:
+        unknown_item: '&c该商店没有商品'
+      hover_text: 'UUID: %s'
+      price_format: '&a单价：%.2f'
+
+    price:
+      input: '请输入新价格（数字）'
+      success: '&a价格已更新！'
+      invalid: '&c请输入有效的数字'
+      range_error: '&c价格必须大于0且小于%max%'
+      error: '&c更新失败，请重试'
 
 transaction:
-    success:
-      single: '&a购买成功：%amount%个'
-      general: '&a交易成功'
-    errors:
-      insufficient_funds: '&c余额不足，需要 &e%cost% &c金币'
+  success:
+    single: '&a购买成功：%amount%个'
+  errors:
+    insufficient_funds: '&c余额不足，需要 &e%cost%'
 
-
-# 界面配置
+# 在 config.yml 中添加
 ui:
-  common:
-    border_item: ' '
-
+  back_button: "&c&l返回"
   main:
     title: "&8&l市集中心"
     buttons:
@@ -226,66 +229,114 @@ ui:
         lore:
           - "管理您的回收铺"
           - "设置回收价格/规则"
-
   browse:
     title:
-      all_shops: '&b&l全服商铺'
-      my_shops: '&6&l我的商铺'
+      all_shops: "&b&l全服商铺"   # 全部商店界面标题
+      my_shops: "&6&l我的商铺"    # 我的商店界面标题
 
-  navigation:
-    page_info: '&f第 %current%/%total% 页'
-    previous_page: '&a上一页'
-    next_page: '&a下一页'
-    no_previous_page: '&c已是第一页'
-    no_next_page: '&c已是最后一页'
+    navigation:
+      page_info: "&f第 %current%/%total% 页"    # 分页信息
+      previous_page: "&a上一页"                 # 上一页按钮
+      next_page: "&a下一页"                     # 下一页按钮
+      no_previous_page: "&c已是第一页"          # 无上一页提示
+      no_next_page: "&c已是最后一页"            # 无下一页提示
+
+    shop_item:
+      name: "&e%name%"  # 商店项名称模板
+      lore: # 商店项描述模板
+        - "&7商品数量: %count%"
+        - "%action%"
+      view_action: "&a点击查看商品"    # 浏览模式操作提示
+      manage_action: "&e点击管理商铺"  # 管理模式操作提示
+
+    common:
+      border_item: " "  # 边框物品占位符
+  edit:
+    title: "&6商铺管理"  # 编辑界面标题
+    # 按钮配置
+    name_button: "&e修改商铺名称"  # 名称修改按钮
+    current_name: "&7当前名称: %name%"  # 名称显示模板
+    desc_button: "&e修改商铺介绍"  # 描述修改按钮
+    current_desc: "&7当前详细描述: %lore%"  # 描述显示模板
+    items_button: "&e管理商品价格"  # 商品管理按钮
+    items_lore: # 商品管理按钮描述
+      - "&7点击管理商品库存和定价"
+    sell_hand_button: "&6上架手持物品"  # 手持物品按钮
+    sell_hand_lore: # 手持物品按钮描述
+      - "&7将手中物品快速上架"
+      - "&e点击设置价格"
+    bulk_sell_button: "&6批量上架物品"  # 批量上架按钮
+    bulk_sell_lore: # 批量上架按钮描述
+      - "&7从背包选择多个物品上架"
+      - "&e点击打开选择界面"
+    name:
+      input: '请输入新名称（%a-%b字符之间）'
+      success: '&a名称已更新！'
+      invalid: '&c请输入有效的名称'
+    lore:
+      input: '请输入新介绍（%b字符之内）'
+      success: '&a介绍已更新！'
+      invalid: '&c请输入有效的介绍'
+    price: # 价格相关
+      input: "&e请输入新价格（数字）"
+      hand: '&c你没有手持物品'
+      success: '&a价格已更新！'
+      invalid: '&c请输入有效的数字'
+  border_item: ' '
+  details:
+    navigation:
+      page_info: "&f第 %current%/%total% 页"    # 分页信息
+      previous_page: "&a上一页"                 # 上一页按钮
+      next_page: "&a下一页"                     # 下一页按钮
+      no_previous_page: "&c已是第一页"          # 无上一页提示
+      no_next_page: "&c已是最后一页"            # 无下一页提示
+    title:
+      buy: "&b商店 » %shop%"   # 对应代码中的ui.details.title.buy
+      edit: "&6管理 » %shop%"  # 对应代码中的ui.details.title.edit
+    edit:
+      price:
+        input: "&e请输入新价格（数字）"
+        success: '&a价格已更新！当前单价: %.2f'
+        invalid: '&c请输入有效的数字'
+    items:
+      inventory_full: '&c你的背包已满，商品已生成为掉落物'
+      success: '&a商品已下架'
+      invalid: '&c请输入有效的数字'
+      insufficient_funds: '&c背包空间不足'
+
+    transaction:
+      error:
+        insufficient_funds_2: '&c余额不足，需要 &e%cost%'
+      success:
+        single: '&a购买成功：%amount%个，扣费：%cost%'
 
   shop_item:
-    name: '&e%name%'
-    lore:
-      - '&7商品数量: %count%'
-      - '%action%'
-    view_action: '&a点击查看商品'
-    manage_action: '&e点击管理商铺'
-
-    info:
-      unknown_item: '未知物品'
-      hover_text: 'UUID: %s'
-      price_format: '$%.2f'
-
-    price_line: '&7单价: &a%price%'
-    stock_line: '&7库存: &a%amount%'
-
+    price_line: "&7单价: &a%price%"  # 原代码中的ui.shop_item.price_line
+    stock_line: "&7库存: &e%amount%个" # 原代码中的ui.shop_item.stock_line
     actions:
-      buy:
-        - '&a左键购买1个'
-        - '&6右键查看批量购买'
-      edit:
-        - '&e左键修改价格'
-        - '&c右键移除商品'
+      buy: # 对应plugin.getStringList("ui.shop_item.actions.buy")
+        - "&a左键购买单个"
+        - "&6右键批量购买"
+      edit: # 对应plugin.getStringList("ui.shop_item.actions.edit")
+        - "&e左键修改价格"
+        - "&c右键删除商品"
 
-  details:
-    title:
-      buy: '&b%shop%'
-      edit: '&6管理 - %shop%'
-    bulk_edit_button: '&e批量管理'
 
-  edit:
-    title: '§6商铺管理'
-    name_button: '&e修改商铺名称'
-    current_name: '&7当前名称: %name%'
-    desc_button: '&e修改商铺介绍'
-    current_desc: '&7当前详细描述: %lore%'
-    items_button: '&e管理商品价格'
-    items_lore:
-      - '&7点击管理商品库存和定价'
-    sell_hand_button: '&6上架手持物品'
-    sell_hand_lore:
-      - '&7将手中物品快速上架'
-      - '&e点击设置价格'
-    bulk_sell_button: '&6批量上架物品'
-    bulk_sell_lore:
-      - '&7从背包选择多个物品上架'
-      - '&e点击打开选择界面'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

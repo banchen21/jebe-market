@@ -44,7 +44,7 @@ public class ShopMainGUI extends GuiManager.BaseGUI {
         this.guiManager = guiManager;
         this.shopManager = shopManager;
         this.inputHandler = inputHandler;
-        this.inventory = Bukkit.createInventory(this, 54, color(plugin.getString("ui.main.title")));
+        this.inventory = Bukkit.createInventory(this, 54, color(plugin.getI18nString("ui.main.title")));
         initializeItems();
     }
 
@@ -106,7 +106,7 @@ public class ShopMainGUI extends GuiManager.BaseGUI {
 
     private ItemStack createMainButton(Material material, String configPath, String... defaultLore) {
         // 从配置获取按钮信息
-        String name = color(plugin.getString(configPath + ".name"));
+        String name = color(plugin.getI18nString(configPath + ".name"));
         List<String> lore = plugin.getStringList(configPath + ".lore")
                 .stream()
                 .map(MessageUtils::color)
@@ -145,22 +145,22 @@ public class ShopMainGUI extends GuiManager.BaseGUI {
                 if (shopList.isEmpty()) {
                     player.closeInventory();
                     // 从配置获取输入提示
-                    String inputPrompt = color(plugin.getString("commands.create.input_prompt"));
+                    String inputPrompt = color(plugin.getI18nString("commands.create.input_prompt"));
                     inputHandler.requestInput(player, inputPrompt,
                             input -> {
                                 // 验证名称长度
                                 if (input.length() < plugin.getInt("settings.shop.min_name_length") ||
                                         input.length() > plugin.getInt("settings.shop.max_name_length")) {
-                                    player.sendMessage(color(plugin.getString("commands.create.errors.name_length")));
+                                    player.sendMessage(color(plugin.getI18nString("commands.create.errors.name_length")));
                                     return;
                                 }
                                 Shop shop = shopManager.createShop(input, player.getUniqueId());
                                 if (shop != null) {
                                     // 成功消息格式化
-                                    String successMsg = color(plugin.getString("commands.create.success"));
+                                    String successMsg = color(plugin.getI18nString("commands.create.success"));
                                     player.sendMessage(color(String.format(successMsg, input, shop.getUuid())));
                                 } else {
-                                    player.sendMessage(color(plugin.getString("commands.create.errors.duplicate_name")));
+                                    player.sendMessage(color(plugin.getI18nString("commands.create.errors.duplicate_name")));
                                 }
                             },
                             30

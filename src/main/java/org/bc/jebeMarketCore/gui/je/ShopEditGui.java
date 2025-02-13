@@ -3,6 +3,7 @@ package org.bc.jebeMarketCore.gui.je;
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.model.Shop;
+import org.bc.jebeMarketCore.model.ShopItem;
 import org.bc.jebeMarketCore.utils.ItemBuilder;
 import org.bc.jebeMarketCore.utils.MessageUtils;
 import org.bc.jebeMarketCore.utils.PlayerInputHandler;
@@ -44,44 +45,44 @@ public class ShopEditGui extends GuiManager.BaseGUI {
         this.shopManager = shopManager;
         this.inputHandler = inputHandler;
         this.guiManager = guiManager;
-        this.inventory = Bukkit.createInventory(this, 54, color(plugin.getString("ui.edit.title")));
+        this.inventory = Bukkit.createInventory(this, 54, color(plugin.getI18nString("ui.edit.title")));
     }
 
     private void initializeUI() {
         // 填充边框
-        ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE).name(color(plugin.getString("ui.common.border_item"))).build();
+        ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE).name(color(plugin.getI18nString("ui.border_item"))).build();
         Arrays.stream(BORDER_SLOTS).forEach(slot -> inventory.setItem(slot, border));
 
         // 功能按钮
         updateInfoDisplay();
 
         // 返回按钮
-        inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER).name(color(plugin.getString("commands.gui.back_button"))).build());
+        inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER).name(color(plugin.getI18nString("ui.back_button"))).build());
     }
 
     private void updateInfoDisplay() {
         // 名称按钮
-        inventory.setItem(NAME_SLOT, ItemBuilder.of(Material.BOOK).name(color(plugin.getString("ui.edit.name_button"))).lore(color(plugin.getString("ui.edit.current_name").replace("%name%", currentShop.getName()))).glow(true).build());
+        inventory.setItem(NAME_SLOT, ItemBuilder.of(Material.BOOK).name(color(plugin.getI18nString("ui.edit.name_button"))).lore(color(plugin.getI18nString("ui.edit.current_name").replace("%name%", currentShop.getName()))).glow(true).build());
 
         // 介绍按钮
-        inventory.setItem(DESC_SLOT, ItemBuilder.of(Material.WRITABLE_BOOK).name(color(plugin.getString("ui.edit.desc_button"))).lore(color(plugin.getString("ui.edit.current_desc").replace("%lore%", currentShop.getLore()))).glow(true).build());
+        inventory.setItem(DESC_SLOT, ItemBuilder.of(Material.WRITABLE_BOOK).name(color(plugin.getI18nString("ui.edit.desc_button"))).lore(color(plugin.getI18nString("ui.edit.current_desc").replace("%lore%", currentShop.getLore()))).glow(true).build());
 
         List<String> loreList = plugin.getStringList("ui.edit.items_lore").stream().map(MessageUtils::color).collect(Collectors.toList());
 
         // 商品管理按钮
-        inventory.setItem(ITEMS_SLOT, ItemBuilder.of(Material.GOLD_INGOT).name(color(plugin.getString("ui.edit.items_button"))).lore(loreList.toArray(new String[0])) // 转换为数组
+        inventory.setItem(ITEMS_SLOT, ItemBuilder.of(Material.GOLD_INGOT).name(color(plugin.getI18nString("ui.edit.items_button"))).lore(loreList.toArray(new String[0])) // 转换为数组
                 .build());
 
         List<String> loreListlore = plugin.getStringList("ui.edit.sell_hand_lore").stream().map(MessageUtils::color).collect(Collectors.toList());
 
         // 上架手持物品按钮
-        inventory.setItem(SELL_HAND_SLOT, ItemBuilder.of(Material.DIAMOND).name(color(plugin.getString("ui.edit.sell_hand_button"))).lore(loreListlore.toArray(new String[0])) // 转换为数组
+        inventory.setItem(SELL_HAND_SLOT, ItemBuilder.of(Material.DIAMOND).name(color(plugin.getI18nString("ui.edit.sell_hand_button"))).lore(loreListlore.toArray(new String[0])) // 转换为数组
                 .build());
 
         List<String> loreListbulk_sell_button = plugin.getStringList("ui.edit.bulk_sell_lore").stream().map(MessageUtils::color).collect(Collectors.toList());
 
         // 上架背包物品按钮
-        inventory.setItem(SELL_INVENTORY_SLOT, ItemBuilder.of(Material.CHEST).name(color(plugin.getString("ui.edit.bulk_sell_button"))).lore(loreListbulk_sell_button.toArray(new String[0])) // 转换为数组
+        inventory.setItem(SELL_INVENTORY_SLOT, ItemBuilder.of(Material.CHEST).name(color(plugin.getI18nString("ui.edit.bulk_sell_button"))).lore(loreListbulk_sell_button.toArray(new String[0])) // 转换为数组
                 .build());
 
     }
@@ -140,7 +141,27 @@ public class ShopEditGui extends GuiManager.BaseGUI {
      * @param player Player
      */
     private void handleSellHandItem(Player player) {
-        shopManager.addHandItem(currentShop.getUuid(), player);
+
+        if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+            player.sendMessage(color(plugin.getI18nString("ui.edit.price.hand")));
+            return;
+        }
+
+        player.closeInventory();
+
+        inputHandler.requestInput(player, color(plugin.getI18nString("ui.edit.price.input")), input -> {
+        try{
+
+            double price = Double.parseDouble(input);
+            ShopItem shopIte = new ShopItem(currentShop.getUuid(), player.getInventory().getItemInMainHand());
+            shopIte.setPrice(price);
+            shopManager.addHandItem(shopIte, player);
+        } catch (Exception e) {
+             player.sendMessage(color(plugin.getI18nString("ui.edit.price.invalid")));
+        }
+
+        }, 30);
+
     }
 
     private void openBulkSellInterface(Player player) {
@@ -148,37 +169,39 @@ public class ShopEditGui extends GuiManager.BaseGUI {
     }
 
     private void handleNameEdit(Player player) {
+
         player.closeInventory();
-        int minNameLength = plugin.getConfig().getInt("settings.shop.min_name_length");
-        int maxNameLength = plugin.getConfig().getInt("settings.shop.max_name_length");
-        String inputPrompt = color(plugin.getString("commands.edit.name.input").replace("%min_name_length%", String.valueOf(minNameLength)).replace("%max_name_length%", String.valueOf(maxNameLength)));
+
+        int minNameLength = plugin.getConfig().getInt("settings.shop.create.min_name_length");
+        int maxNameLength = plugin.getConfig().getInt("settings.shop.create.max_name_length");
+
+        String inputPrompt = color(plugin.getI18nString("ui.edit.name.input").replace("%a", String.valueOf(minNameLength)).replace("%b", String.valueOf(maxNameLength)));
 
         inputHandler.requestInput(player, inputPrompt, input -> {
-            if (input.length() < minNameLength || input.length() > maxNameLength) {
-                String errorMessage = color(plugin.getString("commands.edit.name.errors.length").replace("%min_name_length%", String.valueOf(minNameLength)).replace("%max_name_length%", String.valueOf(maxNameLength)));
-                player.sendMessage(errorMessage);
-                return;
-            }
-
-            currentShop.setName(input);
-            if (shopManager.updateShopName(currentShop)) {
-                player.sendMessage(color(plugin.getString("commands.edit.name.success")));
+            if (shopManager.updateShopName(currentShop, input, player)) {
+                player.sendMessage(color(plugin.getI18nString("ui.edit.name.success")));
             } else {
-                player.sendMessage(color(plugin.getString("commands.edit.name.errors.duplicate")));
+                player.sendMessage(color(plugin.getI18nString("ui.edit.name.invalid")));
             }
         }, 30);
+
     }
 
     private void handleDescEdit(Player player) {
         player.closeInventory();
-        inputHandler.requestInput(player, color(plugin.getString("commands.edit.lore.input")), input -> {
-            if (input.length() > plugin.getConfig().getInt("settings.shop.max_lore_length")) {
-                player.sendMessage(color(plugin.getString("commands.edit.lore.errors.length").replace("%max%", String.valueOf(plugin.getConfig().getInt("settings.shop.max_lore_length")))));
+        int maxLoreLength = plugin.getConfig().getInt("settings.shop.edit.lore.max_length");
+        String string = color(plugin.getI18nString("ui.edit.lore.input").replace("%b", String.valueOf(maxLoreLength)));
+        inputHandler.requestInput(player, string, input -> {
+            if (input.length() > maxLoreLength) {
+                player.sendMessage(string);
                 return;
             }
             currentShop.setLore(input);
-            shopManager.updateShopLore(currentShop);
-            player.sendMessage(color(plugin.getString("commands.edit.lore.success")));
+            if (shopManager.updateShopLore(currentShop)) {
+                player.sendMessage(color(plugin.getI18nString("ui.edit.lore.success")));
+            } else {
+                player.sendMessage(color(plugin.getI18nString("ui.edit.lore.invalid")));
+            }
         }, 60);
     }
 

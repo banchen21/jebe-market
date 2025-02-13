@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -56,84 +57,82 @@ public class ShopCommand implements CommandExecutor {
             return true;
         }
 
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(color(plugin.getI18nString("commands.errors.player_only")));
+            return true;
+        }
+
         String subCommand = args[0].toLowerCase();
         switch (subCommand) {
-            case "gui":
-                handleGui(sender, args);
-                break;
             case "create":
-                handleCreate(sender, args);
-                break;
-            case "edit":
-                handleEdit(sender, args);
+                handleCreate(player, args);
                 break;
             case "delete":
-                handleDelete(sender, args);
+                handleDelete(player, args);
                 break;
-            case "open":
-                handleOpen(sender, args);
+            case "edit":
+                handleEdit(player, args);
                 break;
             case "info":
-                handleInfo(sender, args);
-                break;
-            case "item":
-                handleItem(sender, args);
+                handleInfo(player, args);
                 break;
             case "list":
-                handleList(sender);
+                handleList(player);
+                break;
+            case "open":
+                handleOpen(player, args);
+                break;
+            case "gui":
+                handleGui(player, args);
+                break;
+            case "item":
+                handleItem(player, args);
                 break;
             case "help":
-                sendHelp(sender);
+                sendHelp(player);
                 break;
             default:
-                sender.sendMessage(color(plugin.getString("commands.errors.unknown_command")));
+                player.sendMessage(color(plugin.getI18nString("commands.errors.unknown_command")));
         }
         return true;
     }
 
-    private void handleOpen(@NotNull CommandSender sender, @NotNull String[] args) {
+    //    ================== 商铺管理 ==============
+    private void handleCreate(Player player, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(color(plugin.getString("commands.open.usage")));
-        }
-        Shop shop = shopManager.getShop(args[1]);
-        guiManager.openGuiWithContext((Player) sender, GUIType.SHOP_DETAILS, shop);
-    }
-
-    private void handleGui(@NotNull CommandSender sender, @NotNull String[] args) {
-        Player player = (Player) sender;
-        guiManager.openShopMainGui(player);
-    }
-
-    private void handleCreate(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(color(plugin.getString("commands.errors.player_only")));
-            return;
-        }
-
-        if (args.length < 2) {
-            sender.sendMessage(color(plugin.getString("commands.create.usage")));
+            player.sendMessage(color(plugin.getI18nString("commands.create.usage")));
             return;
         }
 
         String shopName = args[1];
-        if (shopName.length() < 2 || shopName.length() > 16) {
-            player.sendMessage(color(plugin.getString("commands.create.errors.name_length")));
+        shopManager.createShop(shopName, player.getUniqueId());
+    }
+
+    private void handleDelete(Player player, String[] args) {
+        if (args.length < 3 || !args[2].equalsIgnoreCase("yes")) {
+            player.sendMessage(color(plugin.getI18nString("commands.delete.usage")));
             return;
         }
 
-        Shop shop = shopManager.createShop(shopName, player.getUniqueId());
-        if (shop != null) {
-            sender.sendMessage(color(plugin.getString("commands.create.success")
-                    .replace("%s", shopName)
-                    .replace("%s", shop.getUuid().toString())));
-        } else {
-            sender.sendMessage(color(plugin.getString("commands.create.errors.duplicate_name")));
+        Shop shop = shopManager.getShop(args[1]);
+        if (shop == null) {
+            player.sendMessage(color(plugin.getI18nString("commands.errors.shop_not_found")));
+            return;
         }
+
+        if (checkPermission(shop, player)) return;
+
+        if (shopManager.deleteShop(shop.getUuid())) {
+            player.sendMessage(color(plugin.getI18nString("commands.delete.success")));
+        } else {
+            player.sendMessage(color(plugin.getI18nString("commands.delete.errors.not_empty")));
+        }
+
     }
 
-    private void handleEdit(CommandSender sender, String[] args) {
+    private void handleEdit(Player player, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(color(plugin.getString("commands.edit.usage")));
+            player.sendMessage(color(plugin.getI18nString("commands.edit.usage")));
             return;
         }
 
@@ -143,286 +142,220 @@ public class ShopCommand implements CommandExecutor {
         try {
             Shop shop = shopManager.getShop(shopName);
             if (shop == null) {
-                sender.sendMessage(color(plugin.getString("commands.errors.shop_not_found")));
+                player.sendMessage(color(plugin.getI18nString("commands.errors.invalid_type")));
                 return;
             }
-
-            if (!isOwnerOrAdmin(sender, shop)) {
-                sender.sendMessage(color(plugin.getString("commands.errors.no_permission")));
-                return;
-            }
-
+            if (checkPermission(shop, player)) return;
             switch (editType) {
                 case "name":
-                    handleEditName(sender, args, shop);
+                    handleEditName(player, args, shop);
                     break;
                 case "lore":
-                    handleEditLore(sender, args, shop);
+                    handleEditLore(player, args, shop);
                     break;
                 case "owner":
-                    handleEditOwner(sender, args, shop);
+                    handleEditOwner(player, args, shop);
                     break;
                 default:
-                    sender.sendMessage(color("&c无效的编辑类型"));
+                    player.sendMessage(color("&c无效的编辑类型"));
             }
         } catch (IllegalArgumentException e) {
-            sender.sendMessage(color(plugin.getString("commands.errors.invalid_shop_name")));
+            player.sendMessage(color(plugin.getI18nString("commands.errors.invalid_shop_name")));
         }
     }
 
-    private void handleEditName(CommandSender sender, String[] args, Shop shop) {
+    private void handleEditName(Player player, String[] args, Shop shop) {
         if (args.length < 3) {
-            sender.sendMessage(color(plugin.getString("commands.edit.name.usage")));
+            player.sendMessage(color(plugin.getI18nString("commands.edit.name.usage")));
             return;
         }
-        String newName = String.join(" ", Arrays.copyOfRange(args, 3, args.length));
-        if (newName.length() < 2 || newName.length() > 16) {
-            sender.sendMessage("§c名称长度需在2-16字符之间");
-            return;
-        }
-        shop.setName(newName);
-        if (shopManager.updateShopName(shop)) {
-            sender.sendMessage(color(plugin.getString("commands.edit.name.success")));
+
+        String newName = args[3];
+        if (shopManager.updateShopName(shop, newName, player)) {
+            player.sendMessage(color(plugin.getI18nString("transaction.edit.name.success")));
         } else {
-            sender.sendMessage(color(plugin.getString("commands.edit.name.errors.duplicate")));
+            player.sendMessage(color(plugin.getI18nString("commands.edit.name.errors.duplicate")));
         }
     }
 
-    private void handleEditLore(CommandSender sender, String[] args, Shop shop) {
+    private void handleEditLore(Player player, String[] args, Shop shop) {
         if (args.length < 3) {
-            sender.sendMessage(color(plugin.getString("commands.edit.lore.usage")));
+            player.sendMessage(color(plugin.getI18nString("commands.edit.lore.usage")));
             return;
         }
         String lore = String.join(" ", Arrays.copyOfRange(args, 3, args.length));
-        if (lore.length() > 256) {
-            sender.sendMessage(color(plugin.getString("commands.edit.lore.errors.length")));
-            return;
-        }
         shop.setLore(lore);
-        shopManager.updateShopLore(shop);
+        if (shopManager.updateShopLore(shop)) {
+            player.sendMessage(color(plugin.getI18nString("commands.edit.lore.success")));
+        } else {
+            player.sendMessage(color(plugin.getI18nString("commands.edit.lore.errors.duplicate")));
+        }
     }
 
-    private void handleEditOwner(CommandSender sender, String[] args, Shop shop) {
+    private void handleEditOwner(Player player, String[] args, Shop shop) {
         if (args.length < 5 || !args[4].equalsIgnoreCase("yes")) {
-            sender.sendMessage(color(plugin.getString("commands.edit.owner.usage")));
+            player.sendMessage(color(plugin.getI18nString("commands.edit.owner.usage")));
             return;
         }
 
         Player newOwner = Bukkit.getPlayer(args[3]);
         if (newOwner == null) {
-            sender.sendMessage(color(plugin.getString("commands.edit.owner.errors.player_offline")));
-            return;
-        } else if (args[3].equals(sender.getName())) {
-            sender.sendMessage(color(plugin.getString("commands.edit.owner.errors.self")));
-        }
-
-        shop.setOwner(newOwner.getUniqueId());
-        shopManager.updateShopOwner(shop);
-        sender.sendMessage(color(plugin.getString("commands.edit.owner.success")
-                .replace("%s", newOwner.getName())));
-    }
-
-    private void handleDelete(CommandSender sender, String[] args) {
-        if (args.length < 3 || !args[2].equalsIgnoreCase("yes")) {
-            sender.sendMessage(color("&c请在命令末尾添加 yes 确认删除\n例: /shop delete <Name> yes"));
+            player.sendMessage(color(plugin.getI18nString("commands.edit.owner.errors.player_offline")));
             return;
         }
-
-        try {
-            Shop shop = shopManager.getShop(args[1]);
-            if (shop == null) {
-                sender.sendMessage(color(plugin.getString("commands.errors.shop_not_found")));
-                return;
-            }
-
-            if (shopManager.getItems(shop.getUuid()).isEmpty() &&
-                    shopManager.deleteShop(shop.getUuid(), sender.hasPermission("jebemarket.admin"))) {
-                sender.sendMessage(color(plugin.getString("commands.delete.success")));
-            } else {
-                sender.sendMessage(color(plugin.getString("commands.delete.errors.not_empty")));
-            }
-        } catch (IllegalArgumentException e) {
-            sender.sendMessage(color(plugin.getString("commands.errors.invalid_shop_name")));
+        if (args[3].equals(player.getName())) {
+            player.sendMessage(color(plugin.getI18nString("commands.edit.owner.errors.self")));
         }
+
+        if (shopManager.updateShopOwner(shop, newOwner)) {
+            player.sendMessage(color(plugin.getI18nString("commands.edit.owner.success").replace("%s", newOwner.getName())));
+        } else {
+            player.sendMessage(color(plugin.getI18nString("commands.edit.owner.errors.duplicate")));
+        }
+
     }
 
-    private void handleInfo(CommandSender sender, String[] args) {
+    private void handleInfo(Player player, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(color(plugin.getString("commands.info.usage")));
+            player.sendMessage(color(plugin.getI18nString("commands.info.usage")));
             return;
         }
 
         try {
             Shop shop = shopManager.getShop(args[1]);
-            if (shop == null) {
-                sender.sendMessage(color(plugin.getString("commands.errors.shop_not_found")));
-                return;
-            }
-            sender.sendMessage(color(plugin.getString("commands.info.header")));
-            sender.sendMessage(color(plugin.getString("commands.info.entries.uid")
-                    .replace("%s", shop.getUuid().toString())));
-            sender.sendMessage(color(plugin.getString("commands.info.entries.name")
-                    .replace("%s", shop.getName())));
-            sender.sendMessage(color(plugin.getString("commands.info.entries.owner")
-                    .replace("%s", Bukkit.getOfflinePlayer(shop.getOwner()).getName())));
-            sender.sendMessage(color(plugin.getString("commands.info.entries.lore")
-                    .replace("%s", shop.getLore())));
-            sender.sendMessage(color(plugin.getString("commands.info.entries.item_count")
-                    .replace("%s", String.valueOf(shopManager.getItemCount(shop.getUuid())))));
+            if (checkPermission(shop, player)) return;
+            player.sendMessage(color(plugin.getI18nString("commands.info.header")));
+            player.sendMessage(color(plugin.getI18nString("commands.info.entries.uid").replace("%s", shop.getUuid().toString())));
+            player.sendMessage(color(plugin.getI18nString("commands.info.entries.name").replace("%s", shop.getName())));
+            player.sendMessage(color(plugin.getI18nString("commands.info.entries.owner").replace("%s", Bukkit.getOfflinePlayer(shop.getOwner()).getName())));
+            player.sendMessage(color(plugin.getI18nString("commands.info.entries.lore").replace("%s", shop.getLore())));
+            player.sendMessage(color(plugin.getI18nString("commands.info.entries.item_count").replace("%s", String.valueOf(shopManager.getItemCount(shop.getUuid())))));
         } catch (IllegalArgumentException e) {
-            sender.sendMessage(color(plugin.getString("commands.errors.invalid_shop_name")));
+            player.sendMessage(color(plugin.getI18nString("commands.errors.invalid_shop_name")));
         }
     }
 
-    private void handleItem(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(color("&c只有玩家可以管理商品"));
+    private void handleList(Player player) {
+
+        List<Shop> shops = shopManager.getShopsByOwner(player.getUniqueId());
+        if (shops.isEmpty()) {
+            player.sendMessage(color(plugin.getI18nString("commands.list.empty")));
             return;
         }
+
+        player.sendMessage(color(plugin.getI18nString("commands.list.header")));
+        shops.forEach(shop -> {
+            String entry = plugin.getI18nString("commands.list.entry").replace("%name", shop.getName()).replace("%uid", shop.getUuid().toString());
+            player.sendMessage(color(entry));
+        });
+    }
+
+    private void handleOpen(@NotNull Player player, @NotNull String[] args) {
+        if (args.length < 2) {
+            player.sendMessage(color(plugin.getI18nString("commands.open.usage")));
+        }
+        try {
+            Shop shop = shopManager.getShop(args[1]);
+            if (shop == null) {
+                player.sendMessage(color(plugin.getI18nString("commands.errors.shop_not_found")));
+                return;
+            }
+            guiManager.openGuiWithContext(player, GUIType.SHOP_DETAILS, shop);
+        } catch (Exception e) {
+            player.sendMessage(color(plugin.getI18nString("commands.errors.shop_not_found")));
+        }
+    }
+
+    private void handleGui(@NotNull Player player, @NotNull String[] args) {
+        if (args.length < 1) {
+            player.sendMessage(color(plugin.getI18nString("commands.gui.usage")));
+            return;
+        }
+        guiManager.openShopMainGui(player);
+    }
+
+    //    ==================== 商品管理 ===============
+    private void handleItem(Player player, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(color("&c用法: /shop item <up/down/info/edit> ..."));
+            player.sendMessage(color(plugin.getI18nString("commands.item.usage")));
             return;
         }
 
         String operation = args[1].toLowerCase();
         switch (operation) {
             case "up":
-                handleItemUp((Player) sender, args);
+                handleItemUp(player, args);
                 break;
             case "down":
-                handleItemDown((Player) sender, args);
-                break;
-            case "info":
-                handleItemInfo((Player) sender, args);
+                handleItemDown(player, args);
                 break;
             case "edit":
-                handleItemEdit((Player) sender, args);
+                handleItemEdit(player, args);
+                break;
+            case "info":
+                handleItemInfo(player, args);
                 break;
             default:
-                sender.sendMessage(color("&4用法: /shop item <up/down/info/edit>"));
+                player.sendMessage(color("&4用法: /shop item <up/down/info/edit>"));
                 break;
-        }
-    }
-
-    private void handleItemEdit(Player player, String[] args) {
-        try {
-            Shop shop = shopManager.getShop(args[2]);
-            ShopItem shopItem = shopManager.getItem(shop.getUuid(), UUID.fromString(args[3]));
-            double price = Double.parseDouble(args[4]);
-            price = Math.round(price * 100) / 100.0;
-            shopItem.setPrice(price);
-            if (shopManager.updatePrice(shopItem)) {
-                player.sendMessage(color(plugin.getString("commands.item.edit.success")
-                        .replace("%.2f", String.format("%.2f", price))));
-            } else {
-                player.sendMessage(color(plugin.getString("commands.item.edit.error")));
-            }
-        } catch (Exception e) {
-            player.sendMessage(color(plugin.getString("commands.item.edit.usage")));
-        }
-    }
-
-    private void handleItemInfo(Player player, String[] args) {
-        try {
-            Shop shop = shopManager.getShop(args[2]);
-            List<ShopItem> shopItems = shopManager.getItems(shop.getUuid());
-
-            if (shopItems.isEmpty()) {
-                player.sendMessage(color(plugin.getString("commands.item.info.empty")));
-                return;
-            }
-            for (ShopItem shopItem : shopItems) {
-                ItemStack itemStack = shopItem.getItemStack();
-                if (itemStack != null && itemStack.getItemMeta() != null) {
-                    String uuid = shopItem.getUuid().toString();
-                    String name = itemStack.getI18NDisplayName() != null ?
-                            itemStack.getI18NDisplayName() :
-                            plugin.getString("ui.shop_item_info.unknown_item");
-
-                    Component hoverComponent = Component.text(
-                            plugin.getString("ui.shop_item_info.hover_text")
-                                    .replace("%s", uuid));
-
-                    Component priceComponent = Component.text(
-                            String.format(
-                                    plugin.getString("ui.shop_item_info.price_format"),
-                                    shopItem.getPrice()));
-
-                    // 构建完整消息组件
-                    Component message = Component.text()
-                            .append(Component.text("[")
-                                    .color(NamedTextColor.DARK_GRAY))
-                            .append(Component.text(uuid.substring(0, 8))
-                                    .color(NamedTextColor.YELLOW)
-                                    .hoverEvent(HoverEvent.showText(hoverComponent)))
-                            .append(Component.text("] ")
-                                    .color(NamedTextColor.DARK_GRAY))
-                            .append(Component.text(name)
-                                    .color(NamedTextColor.WHITE))
-                            .append(Component.text(" (x")
-                                    .color(NamedTextColor.DARK_GRAY))
-                            .append(Component.text(itemStack.getAmount())
-                                    .color(NamedTextColor.YELLOW))
-                            .append(Component.text(") ")
-                                    .color(NamedTextColor.DARK_GRAY))
-                            .append(priceComponent)
-                            .build();
-                    player.sendMessage(message);
-                }
-            }
-        } catch (Exception e) {
-            player.sendMessage(color(plugin.getString("commands.errors.unknown_error")));
         }
     }
 
     private void handleItemUp(Player player, String[] args) {
         if (args.length < 4) {
-            player.sendMessage(color(plugin.getString("commands.item.up.usage")));
+            player.sendMessage(color(plugin.getI18nString("commands.item.up.usage")));
             return;
         }
 
         try {
             Shop shop = shopManager.getShop(args[3]);
-            if (shop == null || !isOwnerOrAdmin(player, shop)) {
-                player.sendMessage(color("&c无权限操作此商铺"));
-                return;
-            }
-
+            if (checkPermission(shop, player)) return;
             switch (args[2].toLowerCase()) {
                 case "hand":
-                    shopManager.addHandItem(shop.getUuid(), player);
+                    ShopItem shopIte = new ShopItem(shop.getUuid(), player.getInventory().getItemInMainHand());
+                    try {
+                        double price = Double.parseDouble(args[4]);
+                        double max_price = plugin.getConfig().getDouble("settings.item.max_price");
+                        if (price < 0) {
+                            player.sendMessage(color(plugin.getI18nString("commands.item.up.hand.errors.invalid_price")));
+                            return;
+                        }
+
+                        if (price > max_price) {
+                            player.sendMessage(color(plugin.getI18nString("commands.item.up.hand.errors.max_price").replace("%max%", String.valueOf(max_price))));
+                            return;
+                        }
+                        shopIte.setPrice(price);
+                    } catch (Exception e) {
+                        player.sendMessage(color(plugin.getI18nString("commands.item.up.hand.errors.hand_price")));
+                    }
+                    shopManager.addHandItem(shopIte, player);
                     break;
                 case "inventory":
                     shopManager.addInventoryItem(shop.getUuid(), player);
-
                     break;
                 default:
-                    player.sendMessage(color(plugin.getString("commands.item.errors.invalid_source")));
+                    player.sendMessage(color(plugin.getI18nString("commands.item.errors.invalid_source")));
             }
         } catch (IllegalArgumentException e) {
-            player.sendMessage(color(plugin.getString("commands.errors.invalid_shop_name")));
+            player.sendMessage(color(plugin.getI18nString("commands.errors.invalid_shop_name")));
         }
     }
 
     private void handleItemDown(Player player, String[] args) {
         if (args.length < 3) {
-            player.sendMessage(color(plugin.getString("commands.item.down.usage")));
+            player.sendMessage(color(plugin.getI18nString("commands.item.down.usage")));
             return;
         }
 
         try {
             Shop shop = shopManager.getShop(args[2]);
-            if (shop == null || !isOwnerOrAdmin(player, shop)) {
-                player.sendMessage(color("&c无权限操作此商铺"));
-                return;
-            }
-
             if (args.length < 4) {
-                player.sendMessage(color(plugin.getString("commands.item.down.errors.missing_id")));
+                player.sendMessage(color(plugin.getI18nString("commands.item.down.errors.missing_id")));
                 return;
             }
-            String isall = args[3];
-            if (isall.equals("all")) {
+            String text = args[3];
+            if (text.equals("all")) {
                 List<ShopItem> shopItemList = shopManager.getItems(shop.getUuid());
                 shopItemList.forEach(item -> {
                     ItemStack itemStack = shopManager.removeItem(shop, item.getUuid());
@@ -434,57 +367,98 @@ public class ShopCommand implements CommandExecutor {
                 givePlayerItemStack(player, itemStack);
             }
         } catch (IllegalArgumentException e) {
-            player.sendMessage(color(plugin.getString("commands.item.errors.invalid_id")));
+            player.sendMessage(color(plugin.getI18nString("commands.item.errors.invalid_id")));
         }
+    }
+
+    private void handleItemEdit(Player player, String[] args) {
+        if (args.length < 5) player.sendMessage(color(plugin.getI18nString("commands.item.edit.usage")));
+        try {
+            Shop shop = shopManager.getShop(args[2]);
+
+            ShopItem shopItem = shopManager.getItem(shop.getUuid(), UUID.fromString(args[3]));
+
+            double price = Double.parseDouble(args[4]);
+
+            price = Math.round(price * 100) / 100.0;
+
+            shopItem.setPrice(price);
+
+            if (shopManager.updatePrice(shopItem, player)) {
+                player.sendMessage(color(plugin.getI18nString("commands.item.edit.success").replace("%.2f", String.valueOf(price))));
+            }
+        } catch (Exception e) {
+            player.sendMessage(color(plugin.getI18nString("commands.item.edit.usage")));
+        }
+    }
+
+    private void handleItemInfo(Player player, String[] args) {
+        try {
+            Shop shop = shopManager.getShop(args[2]);
+            List<ShopItem> shopItems = shopManager.getItems(shop.getUuid());
+
+            if (shopItems.isEmpty()) {
+                player.sendMessage(color(plugin.getI18nString("commands.item.info.empty")));
+                return;
+            }
+            for (ShopItem shopItem : shopItems) {
+                ItemStack itemStack = shopItem.getItemStack();
+                if (itemStack != null && itemStack.getItemMeta() != null) {
+                    String uuid = shopItem.getUuid().toString();
+                    String name = itemStack.getI18NDisplayName() != null ? itemStack.getI18NDisplayName() : plugin.getI18nString("commands.item.error.unknown_item");
+
+                    Component hoverComponent = Component.text(plugin.getI18nString("commands.item.info.hover_text").replace("%s", uuid));
+
+                    Component priceComponent = Component.text(color(plugin.getI18nString("commands.item.info.price_format").replace("%.2f", new DecimalFormat("#.00").format(shopItem.getPrice()))));
+                    ;
+                    // 构建完整消息组件
+                    Component message = Component.text()
+                            .append(Component.text("[")
+                                    .color(NamedTextColor.DARK_GRAY))
+                            .append(Component.text(uuid.substring(0, 8))
+                                    .color(NamedTextColor.YELLOW)
+                                    .hoverEvent(HoverEvent.showText(hoverComponent)))
+                            .append(Component.text("] ")
+                                    .color(NamedTextColor.DARK_GRAY))
+                            .append(Component.text(name).color(NamedTextColor.WHITE))
+                            .append(Component.text(" (x")
+                                    .color(NamedTextColor.DARK_GRAY))
+                            .append(Component.text(itemStack.getAmount())
+                                    .color(NamedTextColor.YELLOW))
+                            .append(Component.text(") ")
+                                    .color(NamedTextColor.DARK_GRAY)).append(priceComponent).build();
+                    player.sendMessage(message);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            player.sendMessage(color(plugin.getI18nString("commands.errors.unknown_error")));
+        }
+    }
+
+    private void sendHelp(CommandSender sender) {
+        sender.sendMessage(color(plugin.getI18nString("commands.help.header")));
+        plugin.getStringList("commands.help.entries").forEach(entry -> sender.sendMessage(color(entry)));
     }
 
     private void givePlayerItemStack(Player player, ItemStack itemStack) {
         if (itemStack != null) {
             if (player.getInventory().firstEmpty() == -1) {
                 player.getWorld().dropItem(player.getLocation(), itemStack);
-                player.sendMessage(color(plugin.getString("items.inventory_full")));
+                player.sendMessage(color(plugin.getI18nString("commands.item.down.errors.inventory_full")));
             } else {
                 player.getInventory().addItem(itemStack);
             }
-            player.sendMessage(color(plugin.getString("commands.item.down.success")));
+            player.sendMessage(color(plugin.getI18nString("commands.item.down.success")));
         } else {
-            player.sendMessage(color(plugin.getString("commands.item.errors.not_found")));
+            player.sendMessage(color(plugin.getI18nString("commands.item.errors.not_found")));
         }
     }
 
-    private void handleList(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(color(plugin.getString("commands.errors.player_only")));
-            return;
+    public boolean checkPermission(Shop shop, Player player) {
+        if (!shop.getOwner().equals(player.getUniqueId())) {
+            player.sendMessage(color(plugin.getI18nString("commands.errors.no_permission")));
         }
-
-        List<Shop> shops = shopManager.getShopsByOwner(player.getUniqueId());
-        if (shops.isEmpty()) {
-            sender.sendMessage(color(plugin.getString("commands.list.empty")));
-            return;
-        }
-
-        sender.sendMessage(color(plugin.getString("commands.list.header")));
-        shops.forEach(shop -> {
-            String entry = plugin.getString("commands.list.entry")
-                    .replace("%s", shop.getName())
-                    .replace("%s", shop.getUuid().toString());
-            sender.sendMessage(color(entry));
-        });
+        return !shop.getOwner().equals(player.getUniqueId());
     }
-
-    private void sendHelp(CommandSender sender) {
-        sender.sendMessage(color(plugin.getString("commands.help.header")));
-        plugin.getStringList("commands.help.entries").forEach(entry ->
-                sender.sendMessage(color(entry)));
-    }
-
-    private boolean isOwnerOrAdmin(CommandSender sender, Shop shop) {
-        if (sender instanceof Player) {
-            return shop.getOwner().equals(((Player) sender).getUniqueId());
-        }
-        return false;
-    }
-
-
 }

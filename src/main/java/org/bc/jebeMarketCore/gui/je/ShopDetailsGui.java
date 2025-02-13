@@ -37,7 +37,7 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
 
     // 布局常量
     private static final int BACK_SLOT = 0;  // 返回按钮
-    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52,53}; // 边框位置
+    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53}; // 边框位置
     private static final int PREV_PAGE_SLOT = 48; // 上一页按钮
     private static final int NEXT_PAGE_SLOT = 50; // 下一页按钮
     private static final int PAGE_INFO_SLOT = 49; // 页面信息
@@ -87,13 +87,12 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     private void initializeUI() {
         this.inventory = Bukkit.createInventory(this, 54, getTitle());
 
-        // 修复：添加color处理
-        ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE).name(color(plugin.getString("ui.common.border_item"))) // 修改点1
+        ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE).name(color(plugin.getI18nString("ui.border_item")))
                 .build();
         Arrays.stream(BORDER_SLOTS).forEach(slot -> inventory.setItem(slot, border));
 
-        // 修复：添加color处理
-        inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER).name(color(plugin.getString("commands.gui.back_button"))) // 修改点2
+//        返回按钮
+        inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER).name(color(plugin.getI18nString("ui.back_button")))
                 .build());
 
         // 加载商品和翻页按钮
@@ -101,9 +100,14 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
         updateNavigationButtons();
     }
 
+    /**
+     * 获取标题
+     *
+     * @return String
+     */
     private String getTitle() {
         String key = currentMode == Mode.BUY ? "ui.details.title.buy" : "ui.details.title.edit";
-        return color(plugin.getString(key).replace("%shop%", currentShop.getName()));
+        return color(plugin.getI18nString(key).replace("%shop%", currentShop.getName()));
     }
 
     private void refreshItems() {
@@ -128,13 +132,14 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     }
 
     private void updateNavigationButtons() {
-        // 修复：添加color处理
-        String pageInfo = color(plugin.getString("ui.navigation.page_info").replace("%current%", String.valueOf(currentPage + 1)).replace("%total%", String.valueOf(totalPages == 0 ? 1 : totalPages)));
+
+        // 修复：页面信息处理
+        String pageInfo = color(plugin.getI18nString("ui.details.navigation.page_info").replace("%current%", String.valueOf(currentPage + 1)).replace("%total%", String.valueOf(totalPages == 0 ? 1 : totalPages)));
 
         // 修复：按钮文本处理
-        ItemStack prevPageItem = (currentPage > 0 ? ItemBuilder.of(Material.ARROW).name(color(plugin.getString("ui.navigation.previous_page"))) : ItemBuilder.of(Material.RED_STAINED_GLASS_PANE).name(color(plugin.getString("ui.navigation.no_previous_page")))).build();
+        ItemStack prevPageItem = (currentPage > 0 ? ItemBuilder.of(Material.ARROW).name(color(plugin.getI18nString("ui.details.navigation.previous_page"))) : ItemBuilder.of(Material.RED_STAINED_GLASS_PANE).name(color(plugin.getI18nString("ui.details.navigation.no_previous_page")))).build();
 
-        ItemStack nextPageItem = (currentPage < totalPages - 1 ? ItemBuilder.of(Material.ARROW).name(color(plugin.getString("ui.navigation.next_page"))) : ItemBuilder.of(Material.RED_STAINED_GLASS_PANE).name(color(plugin.getString("ui.navigation.no_next_page")))).build();
+        ItemStack nextPageItem = (currentPage < totalPages - 1 ? ItemBuilder.of(Material.ARROW).name(color(plugin.getI18nString("ui.details.navigation.next_page"))) : ItemBuilder.of(Material.RED_STAINED_GLASS_PANE).name(color(plugin.getI18nString("ui.details.navigation.no_next_page")))).build();
 
         inventory.setItem(PREV_PAGE_SLOT, prevPageItem);
         inventory.setItem(PAGE_INFO_SLOT, ItemBuilder.of(Material.PAPER).name(pageInfo).build());
@@ -147,8 +152,8 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
         List<String> lore = meta.getLore() != null ? meta.getLore() : new ArrayList<>();
 
         // 添加基础信息
-        lore.add(color(plugin.getString("ui.shop_item.price_line").replace("%price%", new DecimalFormat("#.00").format(shopItem.getPrice()))));
-        lore.add(color(plugin.getString("ui.shop_item.stock_line")).replace("%amount%", String.valueOf(item.getAmount())));
+        lore.add(color(plugin.getI18nString("ui.shop_item.price_line").replace("%price%", new DecimalFormat("#.00").format(shopItem.getPrice()))));
+        lore.add(color(plugin.getI18nString("ui.shop_item.stock_line")).replace("%amount%", String.valueOf(item.getAmount())));
 
         // 添加操作提示
         List<String> actions = currentMode == Mode.BUY ? plugin.getStringList("ui.shop_item.actions.buy") : plugin.getStringList("ui.shop_item.actions.edit");
@@ -212,7 +217,7 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
 
     private void handleEditClick(InventoryClickEvent event, ShopItem item, Player player) {
         if (!player.getUniqueId().equals(currentShop.getOwner())) {
-            player.sendMessage(color(plugin.getString("commands.errors.no_permission")));
+            player.sendMessage(color(plugin.getI18nString("commands.errors.no_permission")));
             return;
         }
 
@@ -226,34 +231,44 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
         }
     }
 
-    private void purchaseItem(ShopItem item, Player player) {
-        ItemStack itemStack = item.getItemStack();
-        if (itemStack.getAmount() >= 1 && plugin.getLabor_econ().has(player, item.getPrice())) {
-            itemStack.setAmount(itemStack.getAmount() - 1);
-            if (itemStack.getAmount() == 0) {
-                Shop shop = shopManager.getShop(currentShop.getUuid());
-                shopManager.removeItem(shop, item.getUuid());
-            } else {
-                item.setItemStack(itemStack);
-                shopManager.updateItemStack(item);
-            }
-            plugin.getLabor_econ().withdrawPlayer(player, item.getPrice());
+    /**
+     * 购买商品
+     *
+     * @param shopItem ShopItem
+     * @param player   Player
+     */
+    private void purchaseItem(ShopItem shopItem, Player player) {
+        ItemStack itemStack = shopItem.getItemStack();
+        if (itemStack.getAmount() >= 1 && plugin.getLabor_econ().has(player, shopItem.getPrice())) {
+            plugin.getLabor_econ().withdrawPlayer(player, shopItem.getPrice());
+
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(currentShop.getOwner());
-            plugin.getLabor_econ().depositPlayer(offlinePlayer.getPlayer(), item.getPrice());
+
+            plugin.getLabor_econ().depositPlayer(offlinePlayer.getPlayer(), shopItem.getPrice());
 
             ItemStack givePlayerItem = itemStack.clone();
             givePlayerItem.setAmount(1);
             if (player.getInventory().firstEmpty() == -1) {
                 player.getWorld().dropItem(player.getLocation(), givePlayerItem);
-                player.sendMessage(color(plugin.getString("transaction.errors.insufficient_funds")));
+                player.sendMessage(color(plugin.getI18nString("ui.details.items.inventory_full")));
             } else {
                 player.getInventory().addItem(givePlayerItem);
             }
-            player.sendMessage(color(plugin.getString("transaction.success.single")
-                    .replace("%amount%", "1")));
+            player.sendMessage(color(plugin.getI18nString("ui.details.transaction.success.single")
+                    .replace("%amount%", "1")
+                    .replace("%cost%", String.valueOf(shopItem.getPrice()))));
+
+            itemStack.setAmount(itemStack.getAmount() - 1);
+            if (itemStack.getAmount() == 0) {
+                Shop shop = shopManager.getShop(currentShop.getUuid());
+                shopManager.removeItem(shop, shopItem.getUuid());
+            } else {
+                shopItem.setItemStack(itemStack);
+                shopManager.updateItemStack(shopItem);
+            }
             refresh();
         } else {
-            player.sendMessage(color(plugin.getString("transaction.errors.insufficient_funds")));
+            player.sendMessage(color(plugin.getI18nString("ui.details.transaction.errors.insufficient_funds_2").replace("%cost%", String.valueOf(shopItem.getPrice()))));
         }
     }
 
@@ -261,29 +276,22 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
         player.sendMessage("§e批量购买功能开发中...");
     }
 
-    private void modifyPrice(ShopItem item, Player player) {
+    private void modifyPrice(ShopItem shopItem, Player player) {
         player.closeInventory();
-        inputHandler.requestInput(player, color(plugin.getString("commands.edit.price.input")), input -> {
+        inputHandler.requestInput(player, color(plugin.getI18nString("ui.details.edit.price.input")), input -> {
             try {
                 double newPrice = Double.parseDouble(input);
-                double maxPrice = plugin.getConfig().getDouble("settings.shop.max_price");
 
-                if (newPrice <= 0 || newPrice > maxPrice) {
-                    // 修复：使用配置错误提示
-                    String error = color(plugin.getString("commands.edit.price.range_error")).replace("%max%", String.valueOf(maxPrice)); // 修改点8
-                    player.sendMessage(error);
-                    return;
-                }
+                newPrice = Math.round(newPrice * 100) / 100.0;
 
-                item.setPrice(newPrice);
-                if (shopManager.updatePrice(item)) {
-                    player.sendMessage(color(plugin.getString("commands.edit.price.success")));
-                } else {
-                    // 修复：使用配置错误提示
-                    player.sendMessage(color(plugin.getString("commands.edit.price.error"))); // 修改点9
+                shopItem.setPrice(newPrice);
+
+                if (shopManager.updatePrice(shopItem, player)) {
+
+                    player.sendMessage(color(plugin.getI18nString("ui.details.edit.price.success").replace("%.2f", String.valueOf(newPrice))));
                 }
             } catch (NumberFormatException e) {
-                player.sendMessage(color(plugin.getString("commands.edit.price.invalid")));
+                player.sendMessage(color(plugin.getI18nString("ui.details.edit.price.invalid")));
             }
         }, 30);
     }
@@ -292,16 +300,12 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
         ItemStack itemStack = shopManager.removeItem(currentShop, item.getUuid());
         if (player.getInventory().firstEmpty() == -1) {
             player.getWorld().dropItem(player.getLocation(), itemStack);
-            player.sendMessage(color(plugin.getString("items.inventory_full")));
+            player.sendMessage(color(plugin.getI18nString("ui.details.items.inventory_full")));
         } else {
             player.getInventory().addItem(itemStack);
         }
-        player.sendMessage(color(plugin.getString("commands.delete.success.item")));
+        player.sendMessage(color(plugin.getI18nString("ui.details.items.success")));
         refresh();
-    }
-
-    private void handleBulkEdit(Player player) {
-        player.sendMessage(color(plugin.getString("ui.messages.development_feature")));
     }
 
     private void returnToPrevious(Player player) {

@@ -5,10 +5,13 @@ api-version: '1.20'
 authors: [ banchen21 ]
 description: 星际市集
 commands:
-  shop:
+  market:
     description: 星际市集核心指令
-    aliases: [ market ]  # 保留原market指令作为别名
+    aliases: [ shop ]  # 保留原shop指令作为别名
     subcommands:
+      help:
+        description: 查看指令帮助
+        usage: /shop help
       create:
         description: 创建新商铺
         usage: /shop create <商铺名> <shop/pawnshop>
@@ -50,6 +53,3 @@ commands:
           down:
             description: 商品下架操作
             usage: /shop item down <商铺uid> <商品ID>
-  help:
-    description: 查看指令帮助
-    usage: /shop help
