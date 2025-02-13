@@ -115,7 +115,7 @@ public class ShopManagerImpl implements ShopManager {
         if (plugin.getLabor_econ().has(player, plugin.getConfig().getInt("shop_transfer_cost"))) {
             if (shopService.updateShopOwner(shop)) {
                 plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getInt("shop_transfer_cost"));
-                //TODO 修改成功提示
+                player.sendMessage(color(plugin.getString("transaction.success.general")));
                 return true;
             }
         }

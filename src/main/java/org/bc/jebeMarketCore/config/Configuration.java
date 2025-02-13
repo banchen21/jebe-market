@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class Configuration {
 
@@ -41,20 +40,23 @@ public class Configuration {
                 "lang",
                 language + ".yml"
         );
-//        TODO debug
-        try {
-            Files.deleteIfExists(langPath);
-            plugin.saveResource("lang/" + language + ".yml", false);
+        boolean debug = config.getBoolean("debug");
+        if (debug) {
+            try {
+                Files.deleteIfExists(langPath);
+                plugin.saveResource("lang/" + language + ".yml", false);
+                return YamlConfiguration.loadConfiguration(langPath.toFile());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
             return YamlConfiguration.loadConfiguration(langPath.toFile());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
 
     /**
      * 在插件的数据文件夹中创建指定名称的空文件夹。
-     *
      * @param folderName 要创建的文件夹名称
      */
     private void createFolder(String folderName) {
@@ -64,21 +66,5 @@ public class Configuration {
             Files.createDirectories(folderPath);
         } catch (IOException ignored) {
         }
-    }
-
-    public String getString(String s) {
-        return config.getString(s);
-    }
-
-    public int getInt(String s) {
-        return config.getInt(s);
-    }
-
-    public double getDouble(String s) {
-        return config.getDouble(s);
-    }
-
-    public List<String> getStringList(String s) {
-        return config.getStringList(s);
     }
 }

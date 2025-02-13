@@ -1,9 +1,11 @@
 # 使用的语言
 language: cn
+# 是否开启调试模式: 对原配置文件与语言文件进行覆盖
+debug: true
 # 存储方式: 文件、sqlite、mysql
 storage:
   type: sqlite
-  #  TODO
+  #  TODO mysql数据库链接配置
   mysql:
     host: localhost
     port: 3306
