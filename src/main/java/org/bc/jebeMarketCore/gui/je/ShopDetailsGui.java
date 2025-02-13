@@ -37,11 +37,10 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
 
     // 布局常量
     private static final int BACK_SLOT = 0;  // 返回按钮
-    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52}; // 边框位置
+    private static final int[] BORDER_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52,53}; // 边框位置
     private static final int PREV_PAGE_SLOT = 48; // 上一页按钮
     private static final int NEXT_PAGE_SLOT = 50; // 下一页按钮
     private static final int PAGE_INFO_SLOT = 49; // 页面信息
-    private static final int EDIT_SLOT = 53;      // 批量管理按钮
     private static final int ITEMS_PER_PAGE = 36; // 每页显示商品数
 
     // 依赖服务
@@ -57,10 +56,7 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     private int currentPage = 0;
     private int totalPages = 0;
 
-    public ShopDetailsGui(JebeMarket plugin,
-                          ShopManager shopManager,
-                          GuiManager guiManager,
-                          PlayerInputHandler inputHandler) {
+    public ShopDetailsGui(JebeMarket plugin, ShopManager shopManager, GuiManager guiManager, PlayerInputHandler inputHandler) {
         super(plugin);
         this.plugin = plugin;
         this.shopManager = shopManager;
@@ -91,27 +87,14 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     private void initializeUI() {
         this.inventory = Bukkit.createInventory(this, 54, getTitle());
 
-        // 填充边框
-        ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE)
-                .name(" ")
+        // 修复：添加color处理
+        ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE).name(color(plugin.getString("ui.common.border_item"))) // 修改点1
                 .build();
         Arrays.stream(BORDER_SLOTS).forEach(slot -> inventory.setItem(slot, border));
 
-        // 返回按钮
-        inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER)
-                .name("§c返回")
+        // 修复：添加color处理
+        inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER).name(color(plugin.getString("commands.gui.back_button"))) // 修改点2
                 .build());
-
-        // 编辑模式的批量管理按钮
-        if (currentMode == Mode.EDIT) {
-            inventory.setItem(EDIT_SLOT, ItemBuilder.of(Material.ANVIL)
-                    .name("§e批量管理")
-                    .build());
-        } else {
-            inventory.setItem(EDIT_SLOT, ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE)
-                    .name(" ")
-                    .build());
-        }
 
         // 加载商品和翻页按钮
         refreshItems();
@@ -119,9 +102,8 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     }
 
     private String getTitle() {
-        return currentMode == Mode.BUY ?
-                "§b" + currentShop.getName() :
-                "§6管理 - " + currentShop.getName();
+        String key = currentMode == Mode.BUY ? "ui.details.title.buy" : "ui.details.title.edit";
+        return color(plugin.getString(key).replace("%shop%", currentShop.getName()));
     }
 
     private void refreshItems() {
@@ -146,32 +128,17 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     }
 
     private void updateNavigationButtons() {
-        // 更新页面信息
-        inventory.setItem(PAGE_INFO_SLOT, ItemBuilder.of(Material.PAPER)
-                .name("§f第 " + (currentPage + 1) + "/" + (totalPages == 0 ? 1 : totalPages) + " 页")
-                .build());
+        // 修复：添加color处理
+        String pageInfo = color(plugin.getString("ui.navigation.page_info").replace("%current%", String.valueOf(currentPage + 1)).replace("%total%", String.valueOf(totalPages == 0 ? 1 : totalPages)));
 
-        // 上一页按钮
-        if (currentPage > 0) {
-            inventory.setItem(PREV_PAGE_SLOT, ItemBuilder.of(Material.ARROW)
-                    .name("§a上一页")
-                    .build());
-        } else {
-            inventory.setItem(PREV_PAGE_SLOT, ItemBuilder.of(Material.RED_STAINED_GLASS_PANE)
-                    .name("§c已是第一页")
-                    .build());
-        }
+        // 修复：按钮文本处理
+        ItemStack prevPageItem = (currentPage > 0 ? ItemBuilder.of(Material.ARROW).name(color(plugin.getString("ui.navigation.previous_page"))) : ItemBuilder.of(Material.RED_STAINED_GLASS_PANE).name(color(plugin.getString("ui.navigation.no_previous_page")))).build();
 
-        // 下一页按钮
-        if (currentPage < totalPages - 1) {
-            inventory.setItem(NEXT_PAGE_SLOT, ItemBuilder.of(Material.ARROW)
-                    .name("§a下一页")
-                    .build());
-        } else {
-            inventory.setItem(NEXT_PAGE_SLOT, ItemBuilder.of(Material.RED_STAINED_GLASS_PANE)
-                    .name("§c已是最后一页")
-                    .build());
-        }
+        ItemStack nextPageItem = (currentPage < totalPages - 1 ? ItemBuilder.of(Material.ARROW).name(color(plugin.getString("ui.navigation.next_page"))) : ItemBuilder.of(Material.RED_STAINED_GLASS_PANE).name(color(plugin.getString("ui.navigation.no_next_page")))).build();
+
+        inventory.setItem(PREV_PAGE_SLOT, prevPageItem);
+        inventory.setItem(PAGE_INFO_SLOT, ItemBuilder.of(Material.PAPER).name(pageInfo).build());
+        inventory.setItem(NEXT_PAGE_SLOT, nextPageItem);
     }
 
     private ItemStack buildItemDisplay(ShopItem shopItem) {
@@ -179,19 +146,14 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
         ItemMeta meta = item.getItemMeta();
         List<String> lore = meta.getLore() != null ? meta.getLore() : new ArrayList<>();
 
-        // 添加价格信息
-        lore.add("§7单价: §a" + new DecimalFormat("#.00").format(shopItem.getPrice()));
-        lore.add("§7库存: §a" + item.getAmount());
+        // 添加基础信息
+        lore.add(color(plugin.getString("ui.shop_item.price_line").replace("%price%", new DecimalFormat("#.00").format(shopItem.getPrice()))));
+        lore.add(color(plugin.getString("ui.shop_item.stock_line")).replace("%amount%", String.valueOf(item.getAmount())));
 
-        // 模式相关操作提示
-        if (currentMode == Mode.BUY) {
-            lore.add("§a左键购买1个");
-            lore.add("§6右键查看批量购买");
-        } else {
-            lore.add("§e左键修改价格");
-            lore.add("§c右键移除商品");
-        }
+        // 添加操作提示
+        List<String> actions = currentMode == Mode.BUY ? plugin.getStringList("ui.shop_item.actions.buy") : plugin.getStringList("ui.shop_item.actions.edit");
 
+        actions.forEach(action -> lore.add(color(action)));
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
@@ -223,12 +185,6 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
             return;
         }
 
-        // 处理批量管理按钮
-        if (slot == EDIT_SLOT && currentMode == Mode.EDIT) {
-            handleBulkEdit(player);
-            return;
-        }
-
         // 处理商品点击
         if (slot >= 9 && slot <= 44) {
             int index = currentPage * ITEMS_PER_PAGE + (slot - 9);
@@ -256,7 +212,7 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
 
     private void handleEditClick(InventoryClickEvent event, ShopItem item, Player player) {
         if (!player.getUniqueId().equals(currentShop.getOwner())) {
-            player.sendMessage("§c你没有权限修改此商品");
+            player.sendMessage(color(plugin.getString("commands.errors.no_permission")));
             return;
         }
 
@@ -289,14 +245,15 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
             givePlayerItem.setAmount(1);
             if (player.getInventory().firstEmpty() == -1) {
                 player.getWorld().dropItem(player.getLocation(), givePlayerItem);
-                player.sendMessage(color("&c你的背包已满，商品已生成为掉落物"));
+                player.sendMessage(color(plugin.getString("transaction.errors.insufficient_funds")));
             } else {
                 player.getInventory().addItem(givePlayerItem);
             }
-            player.sendMessage("§a购买成功：1个");
+            player.sendMessage(color(plugin.getString("transaction.success.single")
+                    .replace("%amount%", "1")));
             refresh();
         } else {
-            player.sendMessage("§c你没有足够的钱购买此商品");
+            player.sendMessage(color(plugin.getString("transaction.errors.insufficient_funds")));
         }
     }
 
@@ -306,49 +263,50 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
 
     private void modifyPrice(ShopItem item, Player player) {
         player.closeInventory();
-        inputHandler.requestInput(player, "请输入新价格（数字）",
-                input -> {
-                    try {
-                        double newPrice = Double.parseDouble(input);
-                        if (newPrice <= 0 || newPrice > plugin.getConfig().getDouble("max_price")) {
-                            player.sendMessage("§c价格必须大于0且小于" + plugin.getConfig().getDouble("max_price"));
-                            return;
-                        }
-                        item.setPrice(newPrice);
-                        if (shopManager.updatePrice(item)) {
-                            player.sendMessage("§a价格已更新！");
-                        } else {
-                            player.sendMessage("§c更新失败，请重试");
-                        }
-                    } catch (NumberFormatException e) {
-                        player.sendMessage("§c请输入有效的数字");
-                    }
-                },
-                30
-        );
+        inputHandler.requestInput(player, color(plugin.getString("commands.edit.price.input")), input -> {
+            try {
+                double newPrice = Double.parseDouble(input);
+                double maxPrice = plugin.getConfig().getDouble("settings.shop.max_price");
+
+                if (newPrice <= 0 || newPrice > maxPrice) {
+                    // 修复：使用配置错误提示
+                    String error = color(plugin.getString("commands.edit.price.range_error")).replace("%max%", String.valueOf(maxPrice)); // 修改点8
+                    player.sendMessage(error);
+                    return;
+                }
+
+                item.setPrice(newPrice);
+                if (shopManager.updatePrice(item)) {
+                    player.sendMessage(color(plugin.getString("commands.edit.price.success")));
+                } else {
+                    // 修复：使用配置错误提示
+                    player.sendMessage(color(plugin.getString("commands.edit.price.error"))); // 修改点9
+                }
+            } catch (NumberFormatException e) {
+                player.sendMessage(color(plugin.getString("commands.edit.price.invalid")));
+            }
+        }, 30);
     }
 
     private void deleteItem(ShopItem item, Player player) {
         ItemStack itemStack = shopManager.removeItem(currentShop, item.getUuid());
         if (player.getInventory().firstEmpty() == -1) {
             player.getWorld().dropItem(player.getLocation(), itemStack);
-            player.sendMessage(color("&c你的背包已满，商品已生成为掉落物"));
+            player.sendMessage(color(plugin.getString("items.inventory_full")));
         } else {
             player.getInventory().addItem(itemStack);
         }
-        player.sendMessage("§c商品已移除");
+        player.sendMessage(color(plugin.getString("commands.delete.success.item")));
         refresh();
     }
 
     private void handleBulkEdit(Player player) {
-        player.sendMessage("§e批量管理功能开发中...");
+        player.sendMessage(color(plugin.getString("ui.messages.development_feature")));
     }
 
     private void returnToPrevious(Player player) {
         if (currentMode == Mode.EDIT) {
-            guiManager.openGuiWithContext(player,
-                    GUIType.SHOP_EDIT,
-                    currentShop);
+            guiManager.openGuiWithContext(player, GUIType.SHOP_EDIT, currentShop);
         } else {
             guiManager.openGui(player, GUIType.PLAYER_SHOP);
         }

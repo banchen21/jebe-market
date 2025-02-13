@@ -41,7 +41,14 @@ public class Configuration {
                 "lang",
                 language + ".yml"
         );
-        return YamlConfiguration.loadConfiguration(langPath.toFile());
+//        TODO debug
+        try {
+            Files.deleteIfExists(langPath);
+            plugin.saveResource("lang/" + language + ".yml", false);
+            return YamlConfiguration.loadConfiguration(langPath.toFile());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

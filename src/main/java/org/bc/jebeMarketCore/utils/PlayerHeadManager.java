@@ -33,7 +33,11 @@ public class PlayerHeadManager {
         try {
             Files.createDirectories(cacheDirectory);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "无法创建缓存目录", e);
+            plugin.getLogger().log(
+                    Level.SEVERE,
+                    plugin.getString("filesystem.cache.create_failed.ncreate_failed"),
+                    e
+            );
         }
     }
 
@@ -43,7 +47,9 @@ public class PlayerHeadManager {
         try {
             Files.deleteIfExists(cacheFile);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "无法删除缓存文件: " + playerId, e);
+            String message = plugin.getString("filesystem.cache.delete_failed")
+                    .replace("%player%", playerId.toString());
+            plugin.getLogger().log(Level.WARNING, message, e);
         }
     }
 
@@ -57,7 +63,9 @@ public class PlayerHeadManager {
             byte[] serialized = ItemStorageUtil.serializeItemStack(playerHead);
             out.writeObject(serialized);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "保存玩家头颅失败: " + playerId, e);
+            String message = plugin.getString("filesystem.cache.save_failed")
+                    .replace("%player%", playerId.toString());
+            plugin.getLogger().log(Level.SEVERE, message, e);
         }
     }
 
@@ -97,7 +105,9 @@ public class PlayerHeadManager {
             byte[] data = (byte[]) in.readObject();
             return ItemStorageUtil.deserializeItemStack(data);
         } catch (IOException | ClassNotFoundException e) {
-            plugin.getLogger().log(Level.WARNING, "加载缓存头颅失败: " + playerId, e);
+            String message = plugin.getString("filesystem.cache.load_failed")
+                    .replace("%player%", playerId.toString());
+            plugin.getLogger().log(Level.WARNING, message, e);
             return null;
         }
     }
@@ -122,19 +132,30 @@ public class PlayerHeadManager {
     // 添加定期清理任务
     public void scheduleCacheCleanup() {
         plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            int deletedCount = 0;
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(cacheDirectory)) {
                 for (Path path : stream) {
                     if (Files.isRegularFile(path)) {
-                        // 清理超过30天的缓存
                         if (Files.getLastModifiedTime(path).toMillis() <
                                 System.currentTimeMillis() - 2592000000L) {
                             Files.delete(path);
+                            deletedCount++;
                         }
                     }
                 }
+                // 记录清理结果
+                if (deletedCount > 0) {
+                    String message = plugin.getString("plugin.maintenance.cache_cleanup")
+                            .replace("%count%", String.valueOf(deletedCount));
+                    plugin.getLogger().info(message);
+                }
             } catch (IOException e) {
-                plugin.getLogger().log(Level.WARNING, "清理缓存失败", e);
+                plugin.getLogger().log(
+                        Level.WARNING,
+                        plugin.getString("filesystem.cache.cleanup_failed"),
+                        e
+                );
             }
-        }, 72000L, 1728000L); // 1小时后首次执行，每天执行
+        }, 72000L, 1728000L);
     }
 }

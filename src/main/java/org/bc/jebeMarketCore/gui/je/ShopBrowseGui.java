@@ -22,6 +22,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.bc.jebeMarketCore.utils.MessageUtils.color;
 
 @Slf4j
 public class ShopBrowseGui extends GuiManager.BaseGUI {
@@ -68,22 +71,23 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
     }
 
     private String getTitle() {
-        return displayMode == DisplayMode.ALL_SHOPS ?
-                "§b§l全服商铺" : "§6§l我的商铺";
+        String key = displayMode == DisplayMode.ALL_SHOPS ?
+                "ui.browse.title.all_shops" :
+                "ui.browse.title.my_shops";
+        return color(plugin.getString(key));
     }
 
     private void initializeLayout() {
         // 填充边框
         ItemStack border = ItemBuilder.of(Material.BLUE_STAINED_GLASS_PANE)
-                .name(" ")
+                .name(color(plugin.getString("ui.common.border_item")))
                 .build();
         Arrays.stream(BORDER_SLOTS).forEach(slot -> inventory.setItem(slot, border));
 
         // 返回按钮
         inventory.setItem(BACK_SLOT, ItemBuilder.of(Material.BARRIER)
-                .name("§c返回")
+                .name(color(plugin.getString("commands.gui.back_button")))
                 .build());
-
         refreshPage();
     }
 
@@ -122,30 +126,34 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
                 shopManager.getShopsByOwner(currentOwner).size();
         int totalPages = (int) Math.ceil((double) totalShops / ITEMS_PER_PAGE);
 
-        // 页面信息
+        // 修复：添加color处理
+        String pageInfo = color(plugin.getString("ui.navigation.page_info")
+                .replace("%current%", String.valueOf(currentPage + 1))
+                .replace("%total%", String.valueOf(totalPages == 0 ? 1 : totalPages)));
         inventory.setItem(PAGE_INFO_SLOT, ItemBuilder.of(Material.PAPER)
-                .name("§f第 " + (currentPage + 1) + "/" + (totalPages == 0 ? 1 : totalPages) + " 页")
+                .name(pageInfo)
                 .build());
 
-        // 上一页按钮
+
+        // 修复：添加color处理
         if (currentPage > 0) {
             inventory.setItem(PREV_PAGE_SLOT, ItemBuilder.of(Material.ARROW)
-                    .name("§a上一页")
+                    .name(color(plugin.getString("ui.navigation.previous_page")))
                     .build());
         } else {
             inventory.setItem(PREV_PAGE_SLOT, ItemBuilder.of(Material.RED_STAINED_GLASS_PANE)
-                    .name("§c已是第一页")
+                    .name(color(plugin.getString("ui.navigation.no_previous_page")))
                     .build());
         }
 
-        // 下一页按钮
+        // 修复：添加color处理
         if (currentPage < totalPages - 1) {
             inventory.setItem(NEXT_PAGE_SLOT, ItemBuilder.of(Material.ARROW)
-                    .name("§a下一页")
+                    .name(color(plugin.getString("ui.navigation.next_page")))
                     .build());
         } else {
             inventory.setItem(NEXT_PAGE_SLOT, ItemBuilder.of(Material.RED_STAINED_GLASS_PANE)
-                    .name("§c已是最后一页")
+                    .name(color(plugin.getString("ui.navigation.no_next_page")))
                     .build());
         }
     }
@@ -154,12 +162,21 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
         ItemStack head = headManager.getPlayerHead(shop.getOwner());
         ItemMeta meta = head.getItemMeta();
 
-        meta.setDisplayName("§e" + shop.getName());
-        meta.setLore(List.of(
-                "§7商品数量: " + shopManager.getItemCount(shop.getUuid()),
-                displayMode == DisplayMode.ALL_SHOPS ?
-                        "§a点击查看商品" : "§e点击管理商铺"
-        ));
+        // 名称和描述
+        // 修复：添加color处理
+        meta.setDisplayName(color(plugin.getString("ui.shop_item.name")
+                .replace("%name%", shop.getName())));
+
+        List<String> lore = plugin.getStringList("ui.shop_item.lore").stream()
+                .map(line -> {
+                    String replaced = line.replace("%count%",
+                            String.valueOf(shopManager.getItemCount(shop.getUuid())));
+                    return color(displayMode == DisplayMode.ALL_SHOPS ?  // 修复：添加color处理
+                            replaced.replace("%action%", plugin.getString("ui.shop_item.view_action")) :
+                            replaced.replace("%action%", plugin.getString("ui.shop_item.manage_action")));
+                })
+                .collect(Collectors.toList());
+        meta.setLore(lore);
 
         // 存储商店UUID
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -207,8 +224,8 @@ public class ShopBrowseGui extends GuiManager.BaseGUI {
         PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
         if (pdc.has(SHOP_UUID_KEY, PersistentDataType.STRING)) {
             UUID shopId = UUID.fromString(pdc.get(SHOP_UUID_KEY, PersistentDataType.STRING));
-            Shop shop = shopManager.getShop(shopId);
 
+            Shop shop = shopManager.getShop(shopId);
             if (displayMode == DisplayMode.MY_SHOPS) {
                 guiManager.openGuiWithContext(player, GUIType.SHOP_EDIT, shop);
             } else {

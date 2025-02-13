@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import static org.bc.jebeMarketCore.utils.MessageUtils.color;
 
+
 public class ShopCommand implements CommandExecutor {
     @Getter
     private final JebeMarket plugin;
@@ -53,11 +54,6 @@ public class ShopCommand implements CommandExecutor {
         if (args.length == 0) {
             sendHelp(sender);
             return true;
-        }
-
-//        玩家判断
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(color(plugin.getString("commands.errors.player_only")));
         }
 
         String subCommand = args[0].toLowerCase();
@@ -204,7 +200,6 @@ public class ShopCommand implements CommandExecutor {
         }
         shop.setLore(lore);
         shopManager.updateShopLore(shop);
-        sender.sendMessage(color(plugin.getString("commands.edit.lore.success")));
     }
 
     private void handleEditOwner(CommandSender sender, String[] args, Shop shop) {
@@ -217,6 +212,8 @@ public class ShopCommand implements CommandExecutor {
         if (newOwner == null) {
             sender.sendMessage(color(plugin.getString("commands.edit.owner.errors.player_offline")));
             return;
+        } else if (args[3].equals(sender.getName())) {
+            sender.sendMessage(color(plugin.getString("commands.edit.owner.errors.self")));
         }
 
         shop.setOwner(newOwner.getUniqueId());

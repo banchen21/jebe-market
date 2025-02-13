@@ -12,6 +12,12 @@ storage:
     password: ""
     table_prefix: jebe_
     connection_pool: 10
+
+settings:
+  shop:
+    min_name_length: 2
+    max_name_length: 16
+
 interaction:
   # 输入超时时间（秒）
   input_timeout: 30
@@ -26,7 +32,12 @@ stall_mode:
   cost: 50
 
 # 禁止使用的商品名称关键词
-item_ban_words: [ admin, OP, 作弊 ]
+filter:
+  banned_words: # 违禁词列表
+    - "admin"
+    - "op"
+    - "staff"
+
 #  区域限制(TODO)
 restrictions:
   # 禁止创建商铺的世界列表

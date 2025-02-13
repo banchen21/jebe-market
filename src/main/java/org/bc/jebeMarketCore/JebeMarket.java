@@ -120,4 +120,8 @@ public final class JebeMarket extends JavaPlugin {
     public List<String> getStringList(String s) {
         return i18nConfig.getStringList(s);
     }
+
+    public int getInt(String s) {
+        return i18nConfig.getInt(s);
+    }
 }

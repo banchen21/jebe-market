@@ -16,6 +16,11 @@ import static org.bc.jebeMarketCore.utils.MessageUtils.color;
 
 
 public class ShopManagerImpl implements ShopManager {
+    // 配置路径常量
+    private static final String CONFIG_PREFIX = "settings.shop.";
+    private static final String MSG_PREFIX = "commands.";
+    private static final String TXN_PREFIX = "transaction.";
+
 
     ShopServiceImpl shopService;
     private final JebeMarket plugin;
@@ -32,23 +37,31 @@ public class ShopManagerImpl implements ShopManager {
 
     @Override
     public Shop createShop(String shopName, UUID owner) {
-        Shop shop = new Shop(shopName, owner);
+        // 获取配置参数（带默认值）
+        int maxShops = plugin.getConfig().getInt(CONFIG_PREFIX + "max_shops", 5);
+        double createCost = plugin.getConfig().getDouble(CONFIG_PREFIX + "create_cost", 1000.0);
+        List<String> bannedWords = plugin.getConfig().getStringList("filter.banned_words");
 
         Player player = plugin.getServer().getPlayer(owner);
-        if (isShopNameBanned(plugin.getConfig().getStringList("item_ban_words"), shopName)) {
-            player.sendMessage("§c商店名称包含违规字符！");
+
+        // 使用配置消息
+        if (isShopNameBanned(bannedWords, shopName)) {
+            player.sendMessage(color(plugin.getString(MSG_PREFIX + "create.errors.invalid_name")));
             return null;
         }
-//        获取玩家商铺数量
-        if (shopService.getShopsByOwner(owner).size() >= plugin.getConfig().getInt("shop_create_limit")) {
-            player.sendMessage("§c商店创建数量已达上限！");
+
+        if (shopService.getShopsByOwner(owner).size() >= maxShops) {
+            player.sendMessage(color(plugin.getString(MSG_PREFIX + "create.errors.max_limit")));
             return null;
         }
-        if (plugin.getLabor_econ().has(player, plugin.getConfig().getDouble("shop_create_cost"))) {
-            plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getDouble("shop_create_cost"));
+
+        if (plugin.getLabor_econ().has(player, createCost)) {
+            plugin.getLabor_econ().withdrawPlayer(player, createCost);
+            player.sendMessage(color(plugin.getString(MSG_PREFIX + "create.cost_message").replace("%cost%", String.valueOf(createCost))));
         }
+        Shop shop = new Shop(shopName, owner);
         if (shopService.createShop(shop)) {
-            player.sendMessage("§a商店创建费用：" + plugin.getConfig().getInt("shop_create_cost"));
+            player.sendMessage(color(plugin.getString(MSG_PREFIX + "create.success").replace("%name%", shopName).replace("%uid%", shop.getUuid().toString())));
             return shop;
         }
         return null;
@@ -76,15 +89,20 @@ public class ShopManagerImpl implements ShopManager {
 
     @Override
     public boolean updateShopName(Shop shop) {
+        double renameCost = plugin.getConfig().getDouble(CONFIG_PREFIX + "rename_cost", 500.0);
         Player player = plugin.getServer().getPlayer(shop.getOwner());
-        if (plugin.getLabor_econ().has(player, plugin.getConfig().getInt("shop_rename_cost"))) {
+
+        if (plugin.getLabor_econ().has(player, renameCost)) {
             if (shopService.updateShopName(shop)) {
-                plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getInt("shop_rename_cost"));
+                plugin.getLabor_econ().withdrawPlayer(player, renameCost);
+                player.sendMessage(color(plugin.getString(MSG_PREFIX + "edit.name.success")));
                 return true;
             }
         }
-        return shopService.updateShopName(shop);
+        player.sendMessage(color(plugin.getString(TXN_PREFIX + "errors.insufficient_funds")));
+        return false;
     }
+
 
     @Override
     public boolean updateShopOwner(Shop shop) {
@@ -97,21 +115,47 @@ public class ShopManagerImpl implements ShopManager {
         if (plugin.getLabor_econ().has(player, plugin.getConfig().getInt("shop_transfer_cost"))) {
             if (shopService.updateShopOwner(shop)) {
                 plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getInt("shop_transfer_cost"));
+                //TODO 修改成功提示
                 return true;
             }
         }
+        player.sendMessage(color(plugin.getString("transaction.errors.insufficient_funds")));
         return false;
     }
 
     @Override
     public boolean updateShopLore(Shop shop) {
+        // 从配置获取参数（带默认值）
+        double descCost = plugin.getConfig().getDouble("settings.shop.desc_cost", 300.0);
+        int maxLoreLength = plugin.getConfig().getInt("settings.shop.max_lore_length", 256);
+
         Player player = plugin.getServer().getPlayer(shop.getOwner());
-        if (plugin.getLabor_econ().has(player, plugin.getConfig().getInt("shop_desc_cost"))) {
+
+        // 验证描述长度
+        if (shop.getLore().length() > maxLoreLength) {
+            String errorMsg = plugin.getString("commands.edit.lore.errors.length")
+                    .replace("%max%", String.valueOf(maxLoreLength));
+            player.sendMessage(color(errorMsg));
+            return false;
+        }
+
+        // 扣费逻辑
+        if (plugin.getLabor_econ().has(player, descCost)) {
             if (shopService.updateShopLore(shop)) {
-                plugin.getLabor_econ().withdrawPlayer(player, plugin.getConfig().getInt("shop_desc_cost"));
+                plugin.getLabor_econ().withdrawPlayer(player, descCost);
+
+                // 使用配置的成功消息
+                String successMsg = plugin.getString("commands.edit.lore.success_message")
+                        .replace("%cost%", String.valueOf(descCost));
+                player.sendMessage(color(successMsg));
                 return true;
             }
         }
+
+        // 余额不足提示
+        String fundsError = plugin.getString("transaction.errors.insufficient_funds")
+                .replace("%cost%", String.valueOf(descCost));
+        player.sendMessage(color(fundsError));
         return false;
     }
 

@@ -215,6 +215,7 @@ public class ShopSqlite3Util implements ShopRepository {
         try {
             return jdbi.withHandle(handle -> jdbi.withExtension(ShopDao.class, dao -> dao.getItemsByShop(shopuuid)));
         } catch (Exception e) {
+            e.printStackTrace();
             return List.of();
         }
     }

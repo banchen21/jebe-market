@@ -14,21 +14,48 @@ filesystem:
       writable: '&c1. 插件目录可写'
       disk_space: '&c2. 有足够的磁盘空间'
       antivirus: '&c3. 没有杀毒软件拦截文件操作'
+  cache:
+    create_failed: '&c无法创建缓存目录'
+    delete_failed: '&c无法删除缓存文件 [玩家: %player%]'
+    save_failed: '&c保存玩家头颅失败 [玩家: %player%]'
+    load_failed: '&c加载缓存头颅失败 [玩家: %player%]'
+    cleanup_failed: '&c清理缓存失败'
 
 # 插件状态
 plugin:
   enabled: '&aJebeMarketCore 已启用'
   disabled: '&cJebeMarketCore 已停用'
+  maintenance:
+    cache_cleanup: '&a已清理过期缓存，删除文件数: &e%count%'
 
 # 数据库连接
 database:
   connection_failed: '&c数据库连接失败，请检查配置'
   sql_error: '&c数据库操作异常'
 
+# 系统设置
+settings:
+  shop:
+    max_name_length: 16
+    min_name_length: 2
+    max_price: 1000000
+    max_lore_length: 256
+    max_shops: 5
+    create_cost: 1000.0
+    rename_cost: 500.0
+    transfer_cost: 2000.0
+    desc_cost: 300.0
+    item_limit: 50
+    item_list_cost: 100.0
+
 # 命令相关
 commands:
+  gui:
+    back_button: '&c返回'
+
   open:
     usage: '&c用法: /shop open <shop>'
+
   # 通用错误
   errors:
     unknown_error: '&c未知错误'
@@ -42,10 +69,15 @@ commands:
   # 创建命令
   create:
     usage: '&c用法: /shop create <shop> <新名称>'
+    input_prompt: '你还没有一个商铺，请输入新名称（2-16字符）以创建你的第一个商铺'
     errors:
-      name_length: '§c新名称长度需在2-16字符之间'
+      name_length: '&c新名称长度需在2-16字符之间'
       duplicate_name: '&c创建商铺失败，检查名称发现重复'
+      invalid_name: '&c商店名称包含违规字符！'
+      max_limit: '&c商店创建数量已达上限！'
     success: '&a成功创建商店 %s！UID: %s'
+    cost_message: '&a商店创建费用: &e%cost%'
+
 
   # 编辑命令
   edit:
@@ -53,28 +85,41 @@ commands:
     errors:
       invalid_type: '&c无效的编辑类型'
     name:
-      usage: '&c用法: /shop edit name <Name> <新名称>'
-      errors:
-        length: '§c名称长度需在2-16字符之间'
-        duplicate: '&c名称更新失败，可能重复'
+      input: '请输入新名称（2-16字符之间）'
       success: '&a商铺名称已更新'
-    lore:
-      usage: '&c用法: /shop edit lore <Name> <介绍内容>'
       errors:
-        length: '§c介绍过长，最多256字符'
+        length: '&c名称长度需在%min_name_length%-%max_name_length%字符之间'
+        duplicate: '&c名称更新失败，可能重复'
+
+    lore:
+      input: '请输入新介绍（支持多行，最多256字符以 | 符号换行）'
       success: '&a商铺描述已更新'
+      success_message: '&a描述修改成功，扣除费用: &e%cost%'
+      errors:
+        length: '&c描述长度不能超过 &e%max% &c字符'
+
     owner:
       usage: '&c用法: /shop edit owner <商品名> <玩家> yes'
       errors:
         player_offline: '&c目标玩家不在线'
       success: '&a已将商铺转让给 %s'
+      self: '&c不能转让给自己'
+
+    price:
+      input: '请输入新价格（数字）'
+      success: '&a价格已更新！'
+      invalid: '&c请输入有效的数字'
+      range_error: '&c价格必须大于0且小于%max%'
+      error: '&c更新失败，请重试'
 
   # 删除命令
   delete:
     usage: '&c用法: /shop delete <Name> yes'
     errors:
       not_empty: '&c删除失败，商铺内有商品，请先清空商品'
-    success: '&a商店已删除'
+    success:
+      shop: '&a商店已删除'
+      item: '&c商品已移除'
 
   # 商品管理
   item:
@@ -83,11 +128,10 @@ commands:
       invalid_source: '&c无效来源，可用 主手持/背包'
       invalid_id: '&c无效的ID格式'
       not_found: '&c商品不存在'
+      missing_id: '&c请输入要下架的商品ID'
     up:
       usage: '&c用法: /shop item up <hand/inventory> <Name>'
     down:
-      errors:
-        missing_id: '&c请输入要下架的商品ID'
       usage: '&c用法: /shop item down <Name> <商品ID>'
       success: '&a商品已下架'
     edit:
@@ -129,43 +173,119 @@ commands:
 # 物品交互
 items:
   inventory_full: '&c你的背包已满，商品已生成为掉落物'
-  transaction:
-    insufficient_funds: '&c余额不足无法购买'
-    success: '&a交易成功'
+  buttons:
+    main_icon:
+      glow: true
 
-# 界面文本
+transaction:
+    success:
+      single: '&a购买成功：%amount%个'
+      general: '&a交易成功'
+    errors:
+      insufficient_funds: '&c余额不足，需要 &e%cost% &c金币'
+
+
+# 界面配置
 ui:
-  shop_item_info:
-    unknown_item: '未知物品'
-    hover_text: 'UUID: %s'
-    price_format: '$%.2f'
+  common:
+    border_item: ' '
 
+  main:
+    title: "&8&l市集中心"
+    buttons:
+      browse_shop:
+        name: "&b&l市集商铺"
+        lore:
+          - "查看所有上架商品"
+          - "按分类查找"
+          - "支持价格排序"
+      my_shop:
+        name: "&6&l我的商铺"
+        lore:
+          - "管理您的商铺"
+          - "修改价格/下架"
+      pawn_shop:
+        name: "&e&l典当行"
+        lore:
+          - "物品抵押快速变现"
+          - "&c利率: &f5%/天"
+          - "支持赎回期限设置"
+      my_pawn:
+        name: "&e&l我的典当行"
+        lore:
+          - "管理您的典当行"
+          - "设置利率/赎回期限"
+      recycle_shop:
+        name: "&a&l回收铺"
+        lore:
+          - "物品兑换金币"
+          - "批量回收支持"
+          - "实时价格查询"
+      my_recycle:
+        name: "&a&l我的回收铺"
+        lore:
+          - "管理您的回收铺"
+          - "设置回收价格/规则"
 
+  browse:
+    title:
+      all_shops: '&b&l全服商铺'
+      my_shops: '&6&l我的商铺'
 
+  navigation:
+    page_info: '&f第 %current%/%total% 页'
+    previous_page: '&a上一页'
+    next_page: '&a下一页'
+    no_previous_page: '&c已是第一页'
+    no_next_page: '&c已是最后一页'
 
+  shop_item:
+    name: '&e%name%'
+    lore:
+      - '&7商品数量: %count%'
+      - '%action%'
+    view_action: '&a点击查看商品'
+    manage_action: '&e点击管理商铺'
 
+    info:
+      unknown_item: '未知物品'
+      hover_text: 'UUID: %s'
+      price_format: '$%.2f'
 
+    price_line: '&7单价: &a%price%'
+    stock_line: '&7库存: &a%amount%'
 
+    actions:
+      buy:
+        - '&a左键购买1个'
+        - '&6右键查看批量购买'
+      edit:
+        - '&e左键修改价格'
+        - '&c右键移除商品'
 
+  details:
+    title:
+      buy: '&b%shop%'
+      edit: '&6管理 - %shop%'
+    bulk_edit_button: '&e批量管理'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  edit:
+    title: '§6商铺管理'
+    name_button: '&e修改商铺名称'
+    current_name: '&7当前名称: %name%'
+    desc_button: '&e修改商铺介绍'
+    current_desc: '&7当前详细描述: %lore%'
+    items_button: '&e管理商品价格'
+    items_lore:
+      - '&7点击管理商品库存和定价'
+    sell_hand_button: '&6上架手持物品'
+    sell_hand_lore:
+      - '&7将手中物品快速上架'
+      - '&e点击设置价格'
+    bulk_sell_button: '&6批量上架物品'
+    bulk_sell_lore:
+      - '&7从背包选择多个物品上架'
+      - '&e点击打开选择界面'
 
 
 
