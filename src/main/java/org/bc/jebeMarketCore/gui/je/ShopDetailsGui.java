@@ -293,7 +293,7 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
             } catch (NumberFormatException e) {
                 player.sendMessage(color(plugin.getI18nString("ui.details.edit.price.invalid")));
             }
-        }, 30);
+        });
     }
 
     private void deleteItem(ShopItem item, Player player) {

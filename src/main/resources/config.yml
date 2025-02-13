@@ -18,35 +18,47 @@ storage:
 settings:
   shop:
     create:
+      #        创建商铺需要多少余额
       cost: 1000.00
+      #          创建商铺名称长度限制
       min_name_length: 2
+      #          创建商铺名称长度限制
       max_name_length: 16
+      #          创建商铺数量限制
       create_limit: 6
+      #          创建商铺名称过滤
       filter:
         banned_words: # 违禁词列表
           - "admin"
           - "op"
           - "staff"
+    #          修改商铺名称长度限制
     edit:
       name:
+        #          修改商铺名称长度限制
         min_length: 2
+        #          修改商铺名称长度限制
         max_length: 16
+        #            修改商铺名称需要花费
         cost: 500
       lore:
+        #          修改商铺介绍长度限制
         max_length: 256
-      owner:
-        cost: 20
 
+      owner:
+        #          修改商铺拥有者需要花费
+        cost: 20
   item:
+    #        商品最大价格
     max_price: 1000000
     up:
+      #        商品上架需要花费
       cost: 100.00
 
+# 交互相关
 interaction:
   # 输入超时时间（秒）
   input_timeout: 30
-  # 是否允许颜色代码
-  allow_color_code: true
 
 # 摆摊模式（TODO ）
 stall_mode:
@@ -61,28 +73,10 @@ restrictions:
   banned_worlds: [ world_pvp ]
   # 每个区块最大商铺数
   chunk_max_shops: 5
-
-
-
 # 续费商铺每日费用(TODO)
 shop_rent_daily: 10
 
-# 商铺内商品上限
-shop_item_limit: 20
-# 商品上架费用
-item_list_cost: 5
-
-# 转交商铺权限需要多少余额
-shop_transfer_cost: 100
-
-# 商铺修改name需要多少余额
-shop_rename_cost: 50
-# 商铺修改介绍需要多少余额
-shop_desc_cost: 50
-# 商品单价最大为多少
-max_price: 99999999999
-
-# 税收
+# 税收（TODO）
 tax:
   #  购买
   buy: 0

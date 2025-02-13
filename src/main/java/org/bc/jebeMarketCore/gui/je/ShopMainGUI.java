@@ -162,8 +162,7 @@ public class ShopMainGUI extends GuiManager.BaseGUI {
                                 } else {
                                     player.sendMessage(color(plugin.getI18nString("commands.create.errors.duplicate_name")));
                                 }
-                            },
-                            30
+                            }
                     );
                 } else {
                     guiManager.openGuiWithContext(player, GUIType.MY_SHOP, ShopBrowseGui.DisplayMode.MY_SHOPS);

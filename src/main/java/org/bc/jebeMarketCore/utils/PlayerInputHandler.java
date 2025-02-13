@@ -36,9 +36,11 @@ import java.util.function.Consumer;
 public class PlayerInputHandler implements Listener {
     private final Map<UUID, Consumer<String>> inputCallbacks = new HashMap<>();
     private final Plugin plugin;
+    private int timeout;
 
     public PlayerInputHandler(Plugin plugin) {
         this.plugin = plugin;
+        this.timeout=plugin.getConfig().getInt("interaction.input_timeout");
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -48,9 +50,8 @@ public class PlayerInputHandler implements Listener {
      * @param player   目标玩家
      * @param prompt   提示信息
      * @param callback 输入回调（异步）
-     * @param timeout  超时时间（秒）
      */
-    public void requestInput(Player player, String prompt, Consumer<String> callback, int timeout) {
+    public void requestInput(Player player, String prompt, Consumer<String> callback) {
         UUID uuid = player.getUniqueId();
 
         // 发送提示信息

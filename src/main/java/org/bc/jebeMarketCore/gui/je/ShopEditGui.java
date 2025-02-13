@@ -160,7 +160,7 @@ public class ShopEditGui extends GuiManager.BaseGUI {
              player.sendMessage(color(plugin.getI18nString("ui.edit.price.invalid")));
         }
 
-        }, 30);
+        });
 
     }
 
@@ -183,7 +183,7 @@ public class ShopEditGui extends GuiManager.BaseGUI {
             } else {
                 player.sendMessage(color(plugin.getI18nString("ui.edit.name.invalid")));
             }
-        }, 30);
+        });
 
     }
 
@@ -202,7 +202,7 @@ public class ShopEditGui extends GuiManager.BaseGUI {
             } else {
                 player.sendMessage(color(plugin.getI18nString("ui.edit.lore.invalid")));
             }
-        }, 60);
+        });
     }
 
 

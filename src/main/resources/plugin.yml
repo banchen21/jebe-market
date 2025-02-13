@@ -4,6 +4,8 @@ main: org.bc.jebeMarketCore.JebeMarket
 api-version: '1.20'
 authors: [ banchen21 ]
 description: 星际市集
+depend:
+  - DecentHolograms
 commands:
   market:
     description: 星际市集核心指令
