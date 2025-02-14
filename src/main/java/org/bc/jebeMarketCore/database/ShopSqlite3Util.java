@@ -88,14 +88,31 @@ public class ShopSqlite3Util implements ShopRepository {
 
         jdbi.installPlugin(new SqlObjectPlugin());
 
-        // 创建表
+        // 创建商铺表
         jdbi.useHandle(handle -> {
-            // 在 Sqlite3Util 的建表语句中修改主键为 uuid
-            handle.execute("CREATE TABLE IF NOT EXISTS shops (" + "  uuid TEXT NOT NULL PRIMARY KEY," + "  name TEXT NOT NULL UNIQUE," + "  owner TEXT NOT NULL," + "  lore TEXT NOT NULL" + ");");
-        });
+            // 创建表
+            // 创建表
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS shops ("
+                    + "  uuid TEXT NOT NULL PRIMARY KEY,"
+                    + "  name TEXT NOT NULL UNIQUE,"
+                    + "  owner TEXT NOT NULL,"
+                    + "  lore TEXT NOT NULL,"
+                    + "  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                    + "  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                    + ");";
+            handle.execute(createTableSQL);
 
-        // 创建表
-        jdbi.useHandle(handle -> {
+// 创建触发器
+            String createTriggerSQL = "CREATE TRIGGER IF NOT EXISTS update_shops_timestamp "
+                    + "BEFORE UPDATE ON shops "
+                    + "FOR EACH ROW "
+                    + "WHEN NEW.owner <> OLD.owner "
+                    + "BEGIN "
+                    + "  UPDATE shops "
+                    + "  SET updated_at = CURRENT_TIMESTAMP "
+                    + "  WHERE uuid = NEW.uuid; "
+                    + "END;";
+            handle.execute(createTriggerSQL);
             String sql = "CREATE TABLE IF NOT EXISTS shopitems (" + "uuid TEXT NOT NULL PRIMARY KEY, " + "shopuuid TEXT NOT NULL, " + "price REAL NOT NULL " + ");";
             handle.execute(sql);
         });

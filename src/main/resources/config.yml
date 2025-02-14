@@ -76,9 +76,9 @@ restrictions:
 # 续费商铺每日费用(TODO)
 shop_rent_daily: 10
 
-# 税收（TODO）
+# 税收
 tax:
   #  购买
-  buy: 0
+  buy: 0.5
   #  出售
-  sell: 0
+  sell: 0.5

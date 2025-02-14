@@ -149,19 +149,7 @@ public class ShopMainGUI extends GuiManager.BaseGUI {
                     inputHandler.requestInput(player, inputPrompt,
                             input -> {
                                 // 验证名称长度
-                                if (input.length() < plugin.getInt("settings.shop.min_name_length") ||
-                                        input.length() > plugin.getInt("settings.shop.max_name_length")) {
-                                    player.sendMessage(color(plugin.getI18nString("commands.create.errors.name_length")));
-                                    return;
-                                }
-                                Shop shop = shopManager.createShop(input, player.getUniqueId());
-                                if (shop != null) {
-                                    // 成功消息格式化
-                                    String successMsg = color(plugin.getI18nString("commands.create.success"));
-                                    player.sendMessage(color(String.format(successMsg, input, shop.getUuid())));
-                                } else {
-                                    player.sendMessage(color(plugin.getI18nString("commands.create.errors.duplicate_name")));
-                                }
+                                shopManager.createShop(input, player.getUniqueId());
                             }
                     );
                 } else {

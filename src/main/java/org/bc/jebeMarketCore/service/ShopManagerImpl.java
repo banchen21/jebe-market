@@ -48,10 +48,11 @@ public class ShopManagerImpl implements ShopManager {
         }
 
 //        检查名称是否满足字数条件
-        int minShopNameLength = plugin.getInt("settings.shop.create.min_name_length");
-        int maxShopNameLength = plugin.getInt("settings.shop.create.max_name_length");
+        int minShopNameLength = plugin.getConfig().getInt("settings.shop.create.min_name_length");
+        int maxShopNameLength = plugin.getConfig().getInt("settings.shop.create.max_name_length");
         if (shopName.length() < minShopNameLength || shopName.length() > maxShopNameLength) {
             player.sendMessage(color(plugin.getI18nString("commands.create.errors.name_length").replace("%a", String.valueOf(minShopNameLength)).replace("%b", String.valueOf(maxShopNameLength))));
+            return null;
         }
 
 //         检查名称是否在禁止列表中

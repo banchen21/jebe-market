@@ -269,6 +269,15 @@ ui:
     bulk_sell_lore: # 批量上架按钮描述
       - "&7从背包选择多个物品上架"
       - "&e点击打开选择界面"
+    delete_button: "&4&l批量删除"
+    delete_lore: # 批量删除按钮描述
+      - "&4&l将商铺卖掉换钱"
+      - "&e点击删除商铺"
+    delete:
+      confirm: '&c确定删除吗？输入：yes'
+      errors:
+        not_empty: '&c删除失败，商铺内有商品，请先下架商品'
+      success: '&a商铺已删除'
     name:
       input: '请输入新名称（%a-%b字符之间）'
       success: '&a名称已更新！'

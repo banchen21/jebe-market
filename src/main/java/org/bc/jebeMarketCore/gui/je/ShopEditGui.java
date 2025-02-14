@@ -37,6 +37,7 @@ public class ShopEditGui extends GuiManager.BaseGUI {
     private static final int DESC_SLOT = 22;
     private static final int ITEMS_SLOT = 24;
     private static final int SELL_HAND_SLOT = 29;    // 上架手持物品
+    private static final int DELETE_SLOT = 31;   // 删除功能
     private static final int SELL_INVENTORY_SLOT = 33; // 上架背包物品
     private static final int BACK_SLOT = 0;
 
@@ -79,9 +80,14 @@ public class ShopEditGui extends GuiManager.BaseGUI {
         inventory.setItem(SELL_HAND_SLOT, ItemBuilder.of(Material.DIAMOND).name(color(plugin.getI18nString("ui.edit.sell_hand_button"))).lore(loreListlore.toArray(new String[0])) // 转换为数组
                 .build());
 
-        List<String> loreListbulk_sell_button = plugin.getStringList("ui.edit.bulk_sell_lore").stream().map(MessageUtils::color).collect(Collectors.toList());
+        // 删除功能按钮
+        List<String> loreListbulk_delete_button = plugin.getStringList("ui.edit.delete_lore").stream().map(MessageUtils::color).collect(Collectors.toList());
+        inventory.setItem(DELETE_SLOT, ItemBuilder.of(Material.RED_CONCRETE).name(color(plugin.getI18nString("ui.edit.delete_button"))).lore(loreListbulk_delete_button.toArray(new String[0])) // 转换为数组
+                .build());
+
 
         // 上架背包物品按钮
+        List<String> loreListbulk_sell_button = plugin.getStringList("ui.edit.bulk_sell_lore").stream().map(MessageUtils::color).collect(Collectors.toList());
         inventory.setItem(SELL_INVENTORY_SLOT, ItemBuilder.of(Material.CHEST).name(color(plugin.getI18nString("ui.edit.bulk_sell_button"))).lore(loreListbulk_sell_button.toArray(new String[0])) // 转换为数组
                 .build());
 
@@ -132,7 +138,24 @@ public class ShopEditGui extends GuiManager.BaseGUI {
             case SELL_INVENTORY_SLOT:
                 openBulkSellInterface(player);
                 break;
+            case DELETE_SLOT:
+                handleDelete(player);
+                break;
+
         }
+    }
+
+    private void handleDelete(Player player) {
+        player.closeInventory();
+        inputHandler.requestInput(player, color(plugin.getI18nString("ui.edit.delete.confirm")), input -> {
+            if (input.equalsIgnoreCase("yes")) {
+                if (shopManager.deleteShop(currentShop.getUuid())) {
+                    player.sendMessage(color(plugin.getI18nString("ui.edit.delete.errors.not_empty")));
+                } else {
+                    player.sendMessage(color(plugin.getI18nString("ui.edit.delete.success")));
+                }
+            }
+        });
     }
 
     /**
@@ -150,15 +173,15 @@ public class ShopEditGui extends GuiManager.BaseGUI {
         player.closeInventory();
 
         inputHandler.requestInput(player, color(plugin.getI18nString("ui.edit.price.input")), input -> {
-        try{
+            try {
 
-            double price = Double.parseDouble(input);
-            ShopItem shopIte = new ShopItem(currentShop.getUuid(), player.getInventory().getItemInMainHand());
-            shopIte.setPrice(price);
-            shopManager.addHandItem(shopIte, player);
-        } catch (Exception e) {
-             player.sendMessage(color(plugin.getI18nString("ui.edit.price.invalid")));
-        }
+                double price = Double.parseDouble(input);
+                ShopItem shopIte = new ShopItem(currentShop.getUuid(), player.getInventory().getItemInMainHand());
+                shopIte.setPrice(price);
+                shopManager.addHandItem(shopIte, player);
+            } catch (Exception e) {
+                player.sendMessage(color(plugin.getI18nString("ui.edit.price.invalid")));
+            }
 
         });
 

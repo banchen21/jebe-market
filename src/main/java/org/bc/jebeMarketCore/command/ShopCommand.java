@@ -203,7 +203,7 @@ public class ShopCommand implements CommandExecutor {
             player.sendMessage(color(plugin.getI18nString("commands.edit.owner.errors.player_offline")));
             return;
         }
-        if (args[3].equals(player.getName())) {
+        if (newOwner.getUniqueId().equals(player.getUniqueId())) {
             player.sendMessage(color(plugin.getI18nString("commands.edit.owner.errors.self")));
         }
 

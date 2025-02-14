@@ -232,44 +232,62 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     }
 
     /**
-     * 购买商品
+     * 购买商品 TODO 税率
      *
      * @param shopItem ShopItem
      * @param player   Player
      */
     private void purchaseItem(ShopItem shopItem, Player player) {
         ItemStack itemStack = shopItem.getItemStack();
-        if (itemStack.getAmount() >= 1 && plugin.getLabor_econ().has(player, shopItem.getPrice())) {
-            plugin.getLabor_econ().withdrawPlayer(player, shopItem.getPrice());
+        if (itemStack.getAmount() >= 1) {
+            double price = shopItem.getPrice();
+//            出售税率
+            double taxSell = plugin.getConfig().getDouble("tax.sell"); // 0.001
+//            购买税率
+            double taxBuy = plugin.getConfig().getDouble("tax.buy"); // 0.002
 
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(currentShop.getOwner());
+            // 计算含税总价和卖家实收（四舍五入到小数点后两位）
+            double totalCost = Math.round(price * (1 + taxBuy) * 100.0) / 100.0;
+            double sellerReceives = Math.round(price * (1 - taxSell) * 100.0) / 100.0;
+            if (itemStack.getAmount() >= 1 && plugin.getLabor_econ().has(player, totalCost)) {
+                // 扣除买家总金额（含税）
+                plugin.getLabor_econ().withdrawPlayer(player, totalCost);
 
-            plugin.getLabor_econ().depositPlayer(offlinePlayer.getPlayer(), shopItem.getPrice());
-
-            ItemStack givePlayerItem = itemStack.clone();
-            givePlayerItem.setAmount(1);
-            if (player.getInventory().firstEmpty() == -1) {
-                player.getWorld().dropItem(player.getLocation(), givePlayerItem);
-                player.sendMessage(color(plugin.getI18nString("ui.details.items.inventory_full")));
+                // 存款给卖家（扣除销售税）
+                OfflinePlayer owner = Bukkit.getOfflinePlayer(currentShop.getOwner());
+                plugin.getLabor_econ().depositPlayer(owner, sellerReceives);
             } else {
-                player.getInventory().addItem(givePlayerItem);
+                player.sendMessage(color(plugin.getI18nString("ui.details.transaction.errors.insufficient_funds_2")
+                        .replace("%cost%", String.valueOf(totalCost))));
+                return;
             }
-            player.sendMessage(color(plugin.getI18nString("ui.details.transaction.success.single")
-                    .replace("%amount%", "1")
-                    .replace("%cost%", String.valueOf(shopItem.getPrice()))));
 
-            itemStack.setAmount(itemStack.getAmount() - 1);
-            if (itemStack.getAmount() == 0) {
-                Shop shop = shopManager.getShop(currentShop.getUuid());
-                shopManager.removeItem(shop, shopItem.getUuid());
-            } else {
-                shopItem.setItemStack(itemStack);
-                shopManager.updateItemStack(shopItem);
+            {
+                ItemStack givePlayerItem = itemStack.clone();
+                givePlayerItem.setAmount(1);
+                if (player.getInventory().firstEmpty() == -1) {
+                    player.getWorld().dropItem(player.getLocation(), givePlayerItem);
+                    player.sendMessage(color(plugin.getI18nString("ui.details.items.inventory_full")));
+                } else {
+                    player.getInventory().addItem(givePlayerItem);
+                }
+                player.sendMessage(color(plugin.getI18nString("ui.details.transaction.success.single")
+                        .replace("%amount%", "1")
+                        .replace("%cost%", new DecimalFormat("#.00").format(totalCost))));
+            }
+            {
+                itemStack.setAmount(itemStack.getAmount() - 1);
+                if (itemStack.getAmount() == 0) {
+                    Shop shop = shopManager.getShop(currentShop.getUuid());
+                    shopManager.removeItem(shop, shopItem.getUuid());
+                } else {
+                    shopItem.setItemStack(itemStack);
+                    shopManager.updateItemStack(shopItem);
+                }
             }
             refresh();
-        } else {
-            player.sendMessage(color(plugin.getI18nString("ui.details.transaction.errors.insufficient_funds_2").replace("%cost%", String.valueOf(shopItem.getPrice()))));
         }
+
     }
 
     private void openBulkPurchase(ShopItem item, Player player) {
