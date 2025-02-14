@@ -19,6 +19,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.geysermc.floodgate.api.FloodgateApi;
+import org.geysermc.floodgate.api.player.FloodgatePlayer;
+import org.geysermc.floodgate.util.DeviceOs;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -61,7 +64,14 @@ public class ShopCommand implements CommandExecutor {
             sender.sendMessage(color(plugin.getI18nString("commands.errors.player_only")));
             return true;
         }
-
+        FloodgatePlayer floodgatePlayer = FloodgateApi.getInstance().getPlayer(player.getUniqueId());
+        if (floodgatePlayer != null) {
+            if (floodgatePlayer.getDeviceOs().equals(DeviceOs.GOOGLE)) {
+//                TODO 安卓端UI未适配
+                player.sendMessage(color("安卓端UI未适配"));
+                return true;
+            }
+        }
         String subCommand = args[0].toLowerCase();
         switch (subCommand) {
             case "create":

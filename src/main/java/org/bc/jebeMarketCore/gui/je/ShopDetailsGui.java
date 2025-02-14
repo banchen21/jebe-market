@@ -232,8 +232,7 @@ public class ShopDetailsGui extends GuiManager.BaseGUI {
     }
 
     /**
-     * 购买商品 TODO 税率
-     *
+     * 购买商品
      * @param shopItem ShopItem
      * @param player   Player
      */

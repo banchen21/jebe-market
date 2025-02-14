@@ -3,7 +3,7 @@ version: '1.0-SNAPSHOT'
 main: org.bc.jebeMarketCore.JebeMarket
 api-version: '1.20'
 authors: [ banchen21 ]
-description: 星际市集
+description: 星际市集dev 8d1bdf1
 depend:
   - DecentHolograms
 commands:
