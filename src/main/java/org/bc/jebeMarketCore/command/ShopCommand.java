@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bc.jebeMarketCore.JebeMarket;
 import org.bc.jebeMarketCore.api.ShopManager;
 import org.bc.jebeMarketCore.config.Configuration;
+import org.bc.jebeMarketCore.gui.be.ShopMainForm;
 import org.bc.jebeMarketCore.gui.je.GUIType;
 import org.bc.jebeMarketCore.gui.je.GuiManager;
 import org.bc.jebeMarketCore.model.Shop;
@@ -43,14 +44,16 @@ public class ShopCommand implements CommandExecutor {
     @Getter
     private final PlayerHeadManager playerHeadManager;
     private final GuiManager guiManager;
+    private final ShopMainForm shopMainForm;
 
-    public ShopCommand(JebeMarket plugin, ShopManager shopManager, Configuration config, PlayerInputHandler inputHandler, PlayerHeadManager playerHeadManager, GuiManager guiManager) {
+    public ShopCommand(JebeMarket plugin, ShopManager shopManager, Configuration config, PlayerInputHandler inputHandler, PlayerHeadManager playerHeadManager, GuiManager guiManager, ShopMainForm shopMainForm) {
         this.plugin = plugin;
         this.shopManager = shopManager;
         this.config = config;
         this.inputHandler = inputHandler;
         this.playerHeadManager = playerHeadManager;
         this.guiManager = guiManager;
+        this.shopMainForm = shopMainForm;
     }
 
     @Override
@@ -64,14 +67,7 @@ public class ShopCommand implements CommandExecutor {
             sender.sendMessage(color(plugin.getI18nString("commands.errors.player_only")));
             return true;
         }
-        FloodgatePlayer floodgatePlayer = FloodgateApi.getInstance().getPlayer(player.getUniqueId());
-        if (floodgatePlayer != null) {
-            if (floodgatePlayer.getDeviceOs().equals(DeviceOs.GOOGLE)) {
-//                TODO 安卓端UI未适配
-                player.sendMessage(color("安卓端UI未适配"));
-                return true;
-            }
-        }
+
         String subCommand = args[0].toLowerCase();
         switch (subCommand) {
             case "create":
@@ -281,7 +277,15 @@ public class ShopCommand implements CommandExecutor {
             player.sendMessage(color(plugin.getI18nString("commands.gui.usage")));
             return;
         }
-        guiManager.openShopMainGui(player);
+        FloodgatePlayer floodgatePlayer = FloodgateApi.getInstance().getPlayer(player.getUniqueId());
+        if (floodgatePlayer != null) {
+//            if (floodgatePlayer.getDeviceOs().equals(DeviceOs.GOOGLE)) {
+            shopMainForm.toMainForm(player);
+//            }
+        } else {
+
+            guiManager.openShopMainGui(player);
+        }
     }
 
     //    ==================== 商品管理 ===============

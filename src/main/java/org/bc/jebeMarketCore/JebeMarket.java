@@ -8,6 +8,7 @@ import org.bc.jebeMarketCore.command.ShopTabCommand;
 import org.bc.jebeMarketCore.config.Configuration;
 import org.bc.jebeMarketCore.database.MysqlUtil;
 import org.bc.jebeMarketCore.database.ShopSqlite3Util;
+import org.bc.jebeMarketCore.gui.be.ShopMainForm;
 import org.bc.jebeMarketCore.gui.je.GuiManager;
 import org.bc.jebeMarketCore.listeners.PlayerListener;
 import org.bc.jebeMarketCore.repository.ShopServiceImpl;
@@ -31,6 +32,7 @@ import java.util.logging.Level;
 public final class JebeMarket extends JavaPlugin {
 
     //    全局路径
+    @Getter
     ShopManager shopManager;
     Configuration config;
     @Getter
@@ -40,6 +42,7 @@ public final class JebeMarket extends JavaPlugin {
     GuiManager guiManager;
     @Getter
     Economy labor_econ;
+    ShopMainForm shopMainForm;
 
     @Override
     public void onEnable() {
@@ -81,10 +84,11 @@ public final class JebeMarket extends JavaPlugin {
 
         playerHeadManager = new PlayerHeadManager(this);
         guiManager = new GuiManager(this, shopManager, playerHeadManager, inputHandler);
+        shopMainForm = new ShopMainForm(this);
         // 注册命令
         PluginCommand shopCommand = getCommand("shop");
         if (shopCommand != null) {
-            shopCommand.setExecutor(new ShopCommand(this, shopManager, config, inputHandler, playerHeadManager, guiManager));
+            shopCommand.setExecutor(new ShopCommand(this, shopManager, config, inputHandler, playerHeadManager, guiManager,shopMainForm));
             shopCommand.setTabCompleter(new ShopTabCommand(shopManager, config, inputHandler));
         }
 
